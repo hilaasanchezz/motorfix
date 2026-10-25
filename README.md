@@ -35,7 +35,7 @@ motorfix/
 
 - `main`: versión estable, lo que se entrega.
 - `develop`: integración del trabajo de cada semana.
-- `feature/...`: una rama por tarea (por ejemplo `feature/modelo-er`, `feature/conexion-pdo`).
+- Una rama por tarea, por ejemplo `base-datos` o `conexion-bd`.
 
 ## Planificación
 
