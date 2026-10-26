@@ -14,21 +14,15 @@ Aplicación web para el taller "MotorFix": gestión de usuarios y roles, cliente
 
 ```
 motorfix/
-├── backend/
-│   └── model/
-│       └── conectionBD.php  # Conexión PDO con patrón Singleton
-└── database/
-    └── motorfix.sql         # Script para crear la BD en MySQL (se importa en phpMyAdmin)
+└── backend/
+    └── model/
+        └── conectionBD.php  # Conexión PDO con patrón Singleton
 ```
 
 ## Puesta en marcha
 
 1. Clonar el repositorio dentro de la carpeta del servidor web (por ejemplo `htdocs` de XAMPP).
-2. Importar la base de datos:
-   ```bash
-   mysql -u root -p < database/motorfix.sql
-   ```
-   (o desde phpMyAdmin → Importar → `database/motorfix.sql`).
+2. Tener creada en MySQL la base de datos `motorfix`.
 3. Si tu usuario o contraseña de MySQL no son `root` / `1234`, cámbialos en `backend/model/conectionBD.php`.
 
 ## Ramas
