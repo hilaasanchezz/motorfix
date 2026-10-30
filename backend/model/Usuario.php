@@ -83,4 +83,37 @@ class Usuario {
             return [];
         }
     }
+
+    public function actualizar(): bool {
+        if (!in_array($this->rol, self::ROLES, true)) {
+            return false;
+        }
+
+        try {
+            $sql = "UPDATE usuarios
+                    SET nombre = :nombre, email = :email, rol = :rol, activo = :activo
+                    WHERE id = :id";
+
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([
+                ':id'     => $this->id,
+                ':nombre' => $this->nombre,
+                ':email'  => $this->email,
+                ':rol'    => $this->rol,
+                ':activo' => (int) $this->activo,
+            ]);
+
+            // rowCount() sería 0 si los datos no cambian, así que se comprueba
+            // con existe() que el usuario está en la tabla
+            return $stmt->rowCount() > 0 || $this->existe();
+        } catch (PDOException $e) {
+            return false;
+        }
+    }
+
+    private function existe(): bool {
+        $stmt = $this->pdo->prepare("SELECT 1 FROM usuarios WHERE id = :id");
+        $stmt->execute([':id' => $this->id]);
+        return (bool) $stmt->fetchColumn();
+    }
 }
