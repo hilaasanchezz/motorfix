@@ -72,4 +72,15 @@ class Usuario {
             return false;
         }
     }
+
+    public static function listar(): array {
+        try {
+            $sql = "SELECT id, nombre, email, rol, activo, fecha_alta
+                    FROM usuarios ORDER BY nombre";
+
+            return Conection::getInstance()->getPDO()->query($sql)->fetchAll();
+        } catch (PDOException $e) {
+            return [];
+        }
+    }
 }
