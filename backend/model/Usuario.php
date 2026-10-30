@@ -49,4 +49,27 @@ class Usuario {
             return false;
         }
     }
+
+    public function obtener(): array|false {
+        try {
+            $sql = "SELECT id, nombre, email, rol, activo, fecha_alta
+                    FROM usuarios WHERE id = :id";
+
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([':id' => $this->id]);
+            $datos = $stmt->fetch();
+
+            if ($datos) {
+                $this->nombre = $datos['nombre'];
+                $this->email  = $datos['email'];
+                $this->rol    = $datos['rol'];
+                $this->activo = (bool) $datos['activo'];
+                return $datos;
+            }
+
+            return false;
+        } catch (PDOException $e) {
+            return false;
+        }
+    }
 }
