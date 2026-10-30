@@ -24,4 +24,29 @@ class Usuario {
         $this->activo   = $activo;
         $this->pdo      = Conection::getInstance()->getPDO();
     }
+
+    public function insertar(): int|false {
+        if (!in_array($this->rol, self::ROLES, true) || empty($this->password)) {
+            return false;
+        }
+
+        try {
+            $sql = "INSERT INTO usuarios (nombre, email, password, rol, activo)
+                    VALUES (:nombre, :email, :password, :rol, :activo)";
+
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([
+                ':nombre'   => $this->nombre,
+                ':email'    => $this->email,
+                ':password' => $this->password,
+                ':rol'      => $this->rol,
+                ':activo'   => (int) $this->activo,
+            ]);
+
+            $this->id = (int) $this->pdo->lastInsertId();
+            return $this->id;
+        } catch (PDOException $e) {
+            return false;
+        }
+    }
 }
