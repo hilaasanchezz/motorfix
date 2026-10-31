@@ -60,6 +60,36 @@ class Usuario {
     }
 
     /**
+     * Getter mágico: devuelve el valor de una propiedad del usuario.
+     *
+     * No da acceso a la contraseña ni a la conexión PDO.
+     *
+     * @param string $propiedad Nombre de la propiedad
+     * @return mixed El valor de la propiedad, o null si no existe o no se puede leer
+     */
+    public function __get(string $propiedad): mixed {
+        if (in_array($propiedad, ['password', 'pdo'], true) || !property_exists($this, $propiedad)) {
+            return null;
+        }
+        return $this->$propiedad;
+    }
+
+    /**
+     * Setter mágico: cambia el valor de una propiedad del usuario.
+     *
+     * No permite cambiar el id ni la conexión PDO.
+     *
+     * @param string $propiedad Nombre de la propiedad
+     * @param mixed  $valor     Nuevo valor
+     */
+    public function __set(string $propiedad, mixed $valor): void {
+        if (in_array($propiedad, ['id', 'pdo'], true) || !property_exists($this, $propiedad)) {
+            return;
+        }
+        $this->$propiedad = $valor;
+    }
+
+    /**
      * Inserta el usuario en la base de datos con la contraseña cifrada con BCrypt.
      *
      * @return int|false El id del nuevo usuario, o false si el rol no es válido,
