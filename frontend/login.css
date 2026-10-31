@@ -58,3 +58,99 @@ h1 span {
     text-align: center;
     margin: 0 0 25px;
 }
+
+/* Espaciado y alineación de etiquetas y campos */
+form div {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 18px;
+}
+
+label {
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: var(--color-texto);
+    font-size: 14px;
+}
+
+/* Campos de texto: al enfocarlos se marcan en naranja */
+input[type="email"],
+input[type="password"] {
+    padding: 11px 12px;
+    border: 2px solid #dfe2e6;
+    border-radius: 6px;
+    font-size: 15px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+input[type="email"]:focus,
+input[type="password"]:focus {
+    border-color: var(--color-principal);
+    box-shadow: 0 0 0 3px rgba(245, 124, 0, 0.2);
+    outline: none;
+}
+
+/* Botón de entrar a todo el ancho */
+input[type="button"] {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 6px;
+    background-color: var(--color-principal);
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+input[type="button"]:hover {
+    background-color: #e06f00;
+}
+
+input[type="button"]:active {
+    transform: scale(0.98);
+}
+
+/* Mensaje de error o de éxito: solo se ve cuando tiene texto */
+#mensaje {
+    margin: 0 0 15px;
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 14px;
+    text-align: center;
+}
+
+#mensaje:empty {
+    display: none;
+}
+
+#mensaje.error {
+    background-color: #fdecea;
+    color: #c62828;
+}
+
+#mensaje.exito {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+}
+
+/* Enlace al registro */
+.registro {
+    text-align: center;
+    color: var(--color-texto-suave);
+    font-size: 14px;
+    margin: 20px 0 0;
+}
+
+.registro a {
+    color: var(--color-principal);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.registro a:hover {
+    text-decoration: underline;
+}
