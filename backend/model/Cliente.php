@@ -76,4 +76,15 @@ class Cliente {
             return false;
         }
     }
+
+    public static function listar(): array {
+        try {
+            $sql = "SELECT id, usuario_id, dni, nombre, apellidos, telefono, email, direccion, fecha_alta
+                    FROM clientes ORDER BY apellidos, nombre";
+
+            return Conection::getInstance()->getPDO()->query($sql)->fetchAll();
+        } catch (PDOException $e) {
+            return [];
+        }
+    }
 }
