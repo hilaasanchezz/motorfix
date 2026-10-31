@@ -87,4 +87,15 @@ class Vehiculo {
             return false;
         }
     }
+
+    public static function listar(): array {
+        try {
+            $sql = "SELECT id, cliente_id, matricula, marca, modelo, anio, color, kilometros, combustible
+                    FROM vehiculos ORDER BY matricula";
+
+            return Conection::getInstance()->getPDO()->query($sql)->fetchAll();
+        } catch (PDOException $e) {
+            return [];
+        }
+    }
 }
