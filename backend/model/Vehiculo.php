@@ -98,4 +98,42 @@ class Vehiculo {
             return [];
         }
     }
+
+    public function actualizar(): bool {
+        if ($this->combustible !== null && !in_array($this->combustible, self::COMBUSTIBLES, true)) {
+            return false;
+        }
+
+        try {
+            $sql = "UPDATE vehiculos
+                    SET cliente_id = :cliente_id, matricula = :matricula, marca = :marca, modelo = :modelo,
+                        anio = :anio, color = :color, kilometros = :kilometros, combustible = :combustible
+                    WHERE id = :id";
+
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([
+                ':id'          => $this->id,
+                ':cliente_id'  => $this->clienteId,
+                ':matricula'   => $this->matricula,
+                ':marca'       => $this->marca,
+                ':modelo'      => $this->modelo,
+                ':anio'        => $this->anio,
+                ':color'       => $this->color,
+                ':kilometros'  => $this->kilometros,
+                ':combustible' => $this->combustible,
+            ]);
+
+            // rowCount() sería 0 si los datos no cambian, así que se comprueba
+            // con existe() que el vehículo está en la tabla
+            return $stmt->rowCount() > 0 || $this->existe();
+        } catch (PDOException $e) {
+            return false;
+        }
+    }
+
+    private function existe(): bool {
+        $stmt = $this->pdo->prepare("SELECT 1 FROM vehiculos WHERE id = :id");
+        $stmt->execute([':id' => $this->id]);
+        return (bool) $stmt->fetchColumn();
+    }
 }
