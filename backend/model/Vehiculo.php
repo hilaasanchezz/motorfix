@@ -131,6 +131,20 @@ class Vehiculo {
         }
     }
 
+    public function eliminar(): bool {
+        try {
+            $sql = "DELETE FROM vehiculos WHERE id = :id";
+
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([':id' => $this->id]);
+
+            // Si rowCount() es 0, no existía ningún vehículo con ese id
+            return $stmt->rowCount() > 0;
+        } catch (PDOException $e) {
+            return false;
+        }
+    }
+
     private function existe(): bool {
         $stmt = $this->pdo->prepare("SELECT 1 FROM vehiculos WHERE id = :id");
         $stmt->execute([':id' => $this->id]);
