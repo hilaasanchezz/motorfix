@@ -60,4 +60,31 @@ class Vehiculo {
             return false;
         }
     }
+
+    public function obtener(): array|false {
+        try {
+            $sql = "SELECT id, cliente_id, matricula, marca, modelo, anio, color, kilometros, combustible
+                    FROM vehiculos WHERE id = :id";
+
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([':id' => $this->id]);
+            $datos = $stmt->fetch();
+
+            if ($datos) {
+                $this->clienteId   = (int) $datos['cliente_id'];
+                $this->matricula   = $datos['matricula'];
+                $this->marca       = $datos['marca'];
+                $this->modelo      = $datos['modelo'];
+                $this->anio        = $datos['anio'] !== null ? (int) $datos['anio'] : null;
+                $this->color       = $datos['color'];
+                $this->kilometros  = $datos['kilometros'] !== null ? (int) $datos['kilometros'] : null;
+                $this->combustible = $datos['combustible'];
+                return $datos;
+            }
+
+            return false;
+        } catch (PDOException $e) {
+            return false;
+        }
+    }
 }
