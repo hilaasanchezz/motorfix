@@ -38,7 +38,7 @@ class Usuario {
             $stmt->execute([
                 ':nombre'   => $this->nombre,
                 ':email'    => $this->email,
-                ':password' => $this->password,
+                ':password' => password_hash($this->password, PASSWORD_BCRYPT),
                 ':rol'      => $this->rol,
                 ':activo'   => (int) $this->activo,
             ]);
