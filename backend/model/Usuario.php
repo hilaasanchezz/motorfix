@@ -125,6 +125,27 @@ class Usuario {
         }
     }
 
+    public static function login(string $email, string $password): array|false {
+        try {
+            $sql = "SELECT id, nombre, email, password, rol, activo, fecha_alta
+                    FROM usuarios WHERE email = :email";
+
+            $stmt = Conection::getInstance()->getPDO()->prepare($sql);
+            $stmt->execute([':email' => $email]);
+            $datos = $stmt->fetch();
+
+            if ($datos && $datos['activo'] && password_verify($password, $datos['password'])) {
+                // El hash no se devuelve fuera de la clase
+                unset($datos['password']);
+                return $datos;
+            }
+
+            return false;
+        } catch (PDOException $e) {
+            return false;
+        }
+    }
+
     private function existe(): bool {
         $stmt = $this->pdo->prepare("SELECT 1 FROM usuarios WHERE id = :id");
         $stmt->execute([':id' => $this->id]);
