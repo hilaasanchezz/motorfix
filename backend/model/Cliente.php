@@ -87,4 +87,37 @@ class Cliente {
             return [];
         }
     }
+
+    public function actualizar(): bool {
+        try {
+            $sql = "UPDATE clientes
+                    SET usuario_id = :usuario_id, dni = :dni, nombre = :nombre, apellidos = :apellidos,
+                        telefono = :telefono, email = :email, direccion = :direccion
+                    WHERE id = :id";
+
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([
+                ':id'         => $this->id,
+                ':usuario_id' => $this->usuarioId,
+                ':dni'        => $this->dni,
+                ':nombre'     => $this->nombre,
+                ':apellidos'  => $this->apellidos,
+                ':telefono'   => $this->telefono,
+                ':email'      => $this->email,
+                ':direccion'  => $this->direccion,
+            ]);
+
+            // rowCount() sería 0 si los datos no cambian, así que se comprueba
+            // con existe() que el cliente está en la tabla
+            return $stmt->rowCount() > 0 || $this->existe();
+        } catch (PDOException $e) {
+            return false;
+        }
+    }
+
+    private function existe(): bool {
+        $stmt = $this->pdo->prepare("SELECT 1 FROM clientes WHERE id = :id");
+        $stmt->execute([':id' => $this->id]);
+        return (bool) $stmt->fetchColumn();
+    }
 }
