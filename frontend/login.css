@@ -1,0 +1,185 @@
+/* Colores de MotorFix: gris oscuro de taller y naranja como color principal */
+:root {
+    --color-fondo: #1f2328;
+    --color-tarjeta: #ffffff;
+    --color-principal: #f57c00;
+    --color-texto: #2b2f33;
+    --color-texto-suave: #6b7178;
+}
+
+/* Configuración general y centrado en pantalla */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    /* Fondo oscuro con rayas diagonales muy suaves, como una chapa de taller */
+    background-color: var(--color-fondo);
+    background-image: repeating-linear-gradient(
+        45deg,
+        rgba(255, 255, 255, 0.03) 0,
+        rgba(255, 255, 255, 0.03) 2px,
+        transparent 2px,
+        transparent 14px
+    );
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    margin: 0;
+}
+
+/* Tarjeta que contiene el login, con una franja naranja arriba */
+.login {
+    background-color: var(--color-tarjeta);
+    border-top: 6px solid var(--color-principal);
+    padding: 35px 30px 30px;
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    width: 100%;
+    max-width: 380px;
+    box-sizing: border-box;
+}
+
+/* Logo de texto: "Motor" en oscuro y "Fix" en naranja */
+h1 {
+    color: var(--color-texto);
+    text-align: center;
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin: 0 0 5px;
+}
+
+h1 span {
+    color: var(--color-principal);
+}
+
+.subtitulo {
+    color: var(--color-texto-suave);
+    text-align: center;
+    margin: 0 0 25px;
+}
+
+/* Espaciado y alineación de etiquetas y campos */
+form div {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 18px;
+}
+
+label {
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: var(--color-texto);
+    font-size: 14px;
+}
+
+/* Campos de texto: al enfocarlos se marcan en naranja */
+input[type="email"],
+input[type="password"] {
+    padding: 11px 12px;
+    border: 2px solid #dfe2e6;
+    border-radius: 6px;
+    font-size: 15px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+input[type="email"]:focus,
+input[type="password"]:focus {
+    border-color: var(--color-principal);
+    box-shadow: 0 0 0 3px rgba(245, 124, 0, 0.2);
+    outline: none;
+}
+
+/* Botón de entrar a todo el ancho */
+input[type="button"] {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 6px;
+    background-color: var(--color-principal);
+    color: #ffffff;
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+input[type="button"]:hover {
+    background-color: #e06f00;
+}
+
+input[type="button"]:active {
+    transform: scale(0.98);
+}
+
+/* Mensaje de error o de éxito: solo se ve cuando tiene texto */
+#mensaje {
+    margin: 0 0 15px;
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 14px;
+    text-align: center;
+}
+
+#mensaje:empty {
+    display: none;
+}
+
+#mensaje.error {
+    background-color: #fdecea;
+    color: #c62828;
+}
+
+#mensaje.exito {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+}
+
+/* Enlace al registro */
+.registro {
+    text-align: center;
+    color: var(--color-texto-suave);
+    font-size: 14px;
+    margin: 20px 0 0;
+}
+
+.registro a {
+    color: var(--color-principal);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.registro a:hover {
+    text-decoration: underline;
+}
+
+/* Móviles: la tarjeta ocupa toda la pantalla, sin sombra ni bordes redondeados */
+@media (max-width: 480px) {
+    body {
+        align-items: stretch;
+    }
+
+    .login {
+        max-width: none;
+        border-radius: 0;
+        box-shadow: none;
+        padding: 40px 20px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    h1 {
+        font-size: 1.7rem;
+    }
+
+    /* Campos y botón un poco más altos para pulsarlos mejor con el dedo */
+    input[type="email"],
+    input[type="password"],
+    input[type="button"] {
+        padding: 14px;
+        font-size: 16px;
+    }
+}
