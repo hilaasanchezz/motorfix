@@ -154,3 +154,32 @@ input[type="button"]:active {
 .registro a:hover {
     text-decoration: underline;
 }
+
+/* Móviles: la tarjeta ocupa toda la pantalla, sin sombra ni bordes redondeados */
+@media (max-width: 480px) {
+    body {
+        align-items: stretch;
+    }
+
+    .login {
+        max-width: none;
+        border-radius: 0;
+        box-shadow: none;
+        padding: 40px 20px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+    }
+
+    h1 {
+        font-size: 1.7rem;
+    }
+
+    /* Campos y botón un poco más altos para pulsarlos mejor con el dedo */
+    input[type="email"],
+    input[type="password"],
+    input[type="button"] {
+        padding: 14px;
+        font-size: 16px;
+    }
+}
