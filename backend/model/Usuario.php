@@ -38,7 +38,7 @@ class Usuario {
             $stmt->execute([
                 ':nombre'   => $this->nombre,
                 ':email'    => $this->email,
-                ':password' => $this->password,
+                ':password' => password_hash($this->password, PASSWORD_BCRYPT),
                 ':rol'      => $this->rol,
                 ':activo'   => (int) $this->activo,
             ]);
@@ -120,6 +120,27 @@ class Usuario {
 
             // Si rowCount() es 0, no existía ningún usuario con ese id
             return $stmt->rowCount() > 0;
+        } catch (PDOException $e) {
+            return false;
+        }
+    }
+
+    public static function login(string $email, string $password): array|false {
+        try {
+            $sql = "SELECT id, nombre, email, password, rol, activo, fecha_alta
+                    FROM usuarios WHERE email = :email";
+
+            $stmt = Conection::getInstance()->getPDO()->prepare($sql);
+            $stmt->execute([':email' => $email]);
+            $datos = $stmt->fetch();
+
+            if ($datos && $datos['activo'] && password_verify($password, $datos['password'])) {
+                // El hash no se devuelve fuera de la clase
+                unset($datos['password']);
+                return $datos;
+            }
+
+            return false;
         } catch (PDOException $e) {
             return false;
         }
