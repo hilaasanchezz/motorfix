@@ -66,6 +66,36 @@ class Cliente {
     }
 
     /**
+     * Getter mágico: devuelve el valor de una propiedad del cliente.
+     *
+     * No da acceso a la conexión PDO.
+     *
+     * @param string $propiedad Nombre de la propiedad
+     * @return mixed El valor de la propiedad, o null si no existe o no se puede leer
+     */
+    public function __get(string $propiedad): mixed {
+        if ($propiedad === 'pdo' || !property_exists($this, $propiedad)) {
+            return null;
+        }
+        return $this->$propiedad;
+    }
+
+    /**
+     * Setter mágico: cambia el valor de una propiedad del cliente.
+     *
+     * No permite cambiar el id ni la conexión PDO.
+     *
+     * @param string $propiedad Nombre de la propiedad
+     * @param mixed  $valor     Nuevo valor
+     */
+    public function __set(string $propiedad, mixed $valor): void {
+        if (in_array($propiedad, ['id', 'pdo'], true) || !property_exists($this, $propiedad)) {
+            return;
+        }
+        $this->$propiedad = $valor;
+    }
+
+    /**
      * Inserta el cliente en la base de datos.
      *
      * @return int|false El id del nuevo cliente, o false si falla la consulta
