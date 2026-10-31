@@ -27,4 +27,27 @@ class Cliente {
         $this->direccion = $direccion;
         $this->pdo       = Conection::getInstance()->getPDO();
     }
+
+    public function insertar(): int|false {
+        try {
+            $sql = "INSERT INTO clientes (usuario_id, dni, nombre, apellidos, telefono, email, direccion)
+                    VALUES (:usuario_id, :dni, :nombre, :apellidos, :telefono, :email, :direccion)";
+
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([
+                ':usuario_id' => $this->usuarioId,
+                ':dni'        => $this->dni,
+                ':nombre'     => $this->nombre,
+                ':apellidos'  => $this->apellidos,
+                ':telefono'   => $this->telefono,
+                ':email'      => $this->email,
+                ':direccion'  => $this->direccion,
+            ]);
+
+            $this->id = (int) $this->pdo->lastInsertId();
+            return $this->id;
+        } catch (PDOException $e) {
+            return false;
+        }
+    }
 }
