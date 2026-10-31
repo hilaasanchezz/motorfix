@@ -31,4 +31,33 @@ class Vehiculo {
         $this->combustible = $combustible;
         $this->pdo         = Conection::getInstance()->getPDO();
     }
+
+    public function insertar(): int|false {
+        // El combustible es opcional, pero si viene tiene que ser uno de los del ENUM
+        if ($this->combustible !== null && !in_array($this->combustible, self::COMBUSTIBLES, true)) {
+            return false;
+        }
+
+        try {
+            $sql = "INSERT INTO vehiculos (cliente_id, matricula, marca, modelo, anio, color, kilometros, combustible)
+                    VALUES (:cliente_id, :matricula, :marca, :modelo, :anio, :color, :kilometros, :combustible)";
+
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([
+                ':cliente_id'  => $this->clienteId,
+                ':matricula'   => $this->matricula,
+                ':marca'       => $this->marca,
+                ':modelo'      => $this->modelo,
+                ':anio'        => $this->anio,
+                ':color'       => $this->color,
+                ':kilometros'  => $this->kilometros,
+                ':combustible' => $this->combustible,
+            ]);
+
+            $this->id = (int) $this->pdo->lastInsertId();
+            return $this->id;
+        } catch (PDOException $e) {
+            return false;
+        }
+    }
 }
