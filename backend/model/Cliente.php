@@ -115,6 +115,21 @@ class Cliente {
         }
     }
 
+    public function eliminar(): bool {
+        try {
+            // Los vehículos del cliente se borran también (ON DELETE CASCADE)
+            $sql = "DELETE FROM clientes WHERE id = :id";
+
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([':id' => $this->id]);
+
+            // Si rowCount() es 0, no existía ningún cliente con ese id
+            return $stmt->rowCount() > 0;
+        } catch (PDOException $e) {
+            return false;
+        }
+    }
+
     private function existe(): bool {
         $stmt = $this->pdo->prepare("SELECT 1 FROM clientes WHERE id = :id");
         $stmt->execute([':id' => $this->id]);
