@@ -50,4 +50,30 @@ class Cliente {
             return false;
         }
     }
+
+    public function obtener(): array|false {
+        try {
+            $sql = "SELECT id, usuario_id, dni, nombre, apellidos, telefono, email, direccion, fecha_alta
+                    FROM clientes WHERE id = :id";
+
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([':id' => $this->id]);
+            $datos = $stmt->fetch();
+
+            if ($datos) {
+                $this->usuarioId = $datos['usuario_id'] !== null ? (int) $datos['usuario_id'] : null;
+                $this->dni       = $datos['dni'];
+                $this->nombre    = $datos['nombre'];
+                $this->apellidos = $datos['apellidos'];
+                $this->telefono  = $datos['telefono'];
+                $this->email     = $datos['email'];
+                $this->direccion = $datos['direccion'];
+                return $datos;
+            }
+
+            return false;
+        } catch (PDOException $e) {
+            return false;
+        }
+    }
 }
