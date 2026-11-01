@@ -88,6 +88,48 @@
                 <input type="button" value="Añadir vehículo" id="anadir-vehiculo">
             </form>
         </section>
+
+        <!-- Sección de citas: listado y formulario para pedir una nueva -->
+        <section id="citas">
+            <h2>Mis citas</h2>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Vehículo</th>
+                        <th>Motivo</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <!-- Aquí se mostrarán las citas del cliente con el estado de cada reparación -->
+                <tbody id="lista-citas">
+                </tbody>
+            </table>
+
+            <h3>Pedir cita</h3>
+            <form id="form-cita">
+                <div>
+                    <label for="vehiculo-cita">Vehículo: </label>
+                    <!-- Aquí se mostrarán los vehículos del cliente para elegir uno -->
+                    <select name="vehiculo_id" id="vehiculo-cita">
+                    </select>
+                </div>
+                <div>
+                    <label for="fecha-cita">Fecha: </label>
+                    <input type="datetime-local" name="fecha_cita" id="fecha-cita">
+                </div>
+                <div>
+                    <label for="motivo">Motivo: </label>
+                    <input type="text" name="motivo" id="motivo">
+                </div>
+
+                <!-- Aquí se mostrarán los mensajes de error o de éxito -->
+                <p id="mensaje-cita"></p>
+
+                <input type="button" value="Pedir cita" id="pedir-cita">
+            </form>
+        </section>
     </main>
 </body>
 </html>
