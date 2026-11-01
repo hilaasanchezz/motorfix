@@ -31,3 +31,16 @@ input[type="text"]:focus {
     box-shadow: 0 0 0 3px rgba(245, 124, 0, 0.2);
     outline: none;
 }
+
+/* Móviles: los campos pasan a una sola columna (la tarjeta ya ocupa toda la pantalla por login.css) */
+@media (max-width: 480px) {
+    .campos {
+        grid-template-columns: 1fr;
+    }
+
+    /* Campos de texto un poco más altos para pulsarlos mejor con el dedo, igual que en el login */
+    input[type="text"] {
+        padding: 14px;
+        font-size: 16px;
+    }
+}
