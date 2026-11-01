@@ -1,0 +1,46 @@
+/* Estilos propios del registro: el resto se toma de login.css */
+
+/* Tarjeta más ancha que la del login para que quepan dos columnas */
+.tarjeta-registro {
+    max-width: 600px;
+}
+
+/* Campos en dos columnas */
+.campos {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    column-gap: 20px;
+}
+
+/* Dirección, email y contraseña ocupan las dos columnas */
+.campo-completo {
+    grid-column: 1 / -1;
+}
+
+/* Campos de texto con el mismo aspecto que los del login */
+input[type="text"] {
+    padding: 11px 12px;
+    border: 2px solid #dfe2e6;
+    border-radius: 6px;
+    font-size: 15px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+input[type="text"]:focus {
+    border-color: var(--color-principal);
+    box-shadow: 0 0 0 3px rgba(245, 124, 0, 0.2);
+    outline: none;
+}
+
+/* Móviles: los campos pasan a una sola columna (la tarjeta ya ocupa toda la pantalla por login.css) */
+@media (max-width: 480px) {
+    .campos {
+        grid-template-columns: 1fr;
+    }
+
+    /* Campos de texto un poco más altos para pulsarlos mejor con el dedo, igual que en el login */
+    input[type="text"] {
+        padding: 14px;
+        font-size: 16px;
+    }
+}
