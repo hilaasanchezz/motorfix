@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MotorFix - Mi panel</title>
+    <link rel="stylesheet" href="cliente.css">
+</head>
+<body>
+    <!-- Cabecera con el logo y el botón para cerrar sesión -->
+    <header>
+        <h1>Motor<span>Fix</span></h1>
+        <input type="button" value="Cerrar sesión" id="cerrar-sesion">
+    </header>
+
+    <!-- Menú con las secciones del panel de cliente -->
+    <nav>
+        <ul>
+            <li><a href="#vehiculos">Mis vehículos</a></li>
+            <li><a href="#citas">Mis citas</a></li>
+            <li><a href="#facturas">Mis facturas</a></li>
+        </ul>
+    </nav>
+
+    <!-- Aquí irán las secciones de vehículos, citas y facturas -->
+    <main>
+        <!-- Sección de vehículos: listado y formulario para añadir uno nuevo -->
+        <section id="vehiculos">
+            <h2>Mis vehículos</h2>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Matrícula</th>
+                        <th>Marca</th>
+                        <th>Modelo</th>
+                        <th>Año</th>
+                        <th>Color</th>
+                        <th>Kilómetros</th>
+                        <th>Combustible</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <!-- Aquí se mostrarán los vehículos del cliente, cada uno con su botón de editar y eliminar -->
+                <tbody id="lista-vehiculos">
+                </tbody>
+            </table>
+
+            <h3>Añadir vehículo</h3>
+            <form id="form-vehiculo">
+                <div>
+                    <label for="matricula">Matrícula: </label>
+                    <input type="text" name="matricula" id="matricula">
+                </div>
+                <div>
+                    <label for="marca">Marca: </label>
+                    <input type="text" name="marca" id="marca">
+                </div>
+                <div>
+                    <label for="modelo">Modelo: </label>
+                    <input type="text" name="modelo" id="modelo">
+                </div>
+                <div>
+                    <label for="anio">Año: </label>
+                    <input type="text" name="anio" id="anio">
+                </div>
+                <div>
+                    <label for="color">Color: </label>
+                    <input type="text" name="color" id="color">
+                </div>
+                <div>
+                    <label for="kilometros">Kilómetros: </label>
+                    <input type="text" name="kilometros" id="kilometros">
+                </div>
+                <div>
+                    <label for="combustible">Combustible: </label>
+                    <select name="combustible" id="combustible">
+                        <option value="gasolina">Gasolina</option>
+                        <option value="diesel">Diésel</option>
+                        <option value="hibrido">Híbrido</option>
+                        <option value="electrico">Eléctrico</option>
+                        <option value="glp">GLP</option>
+                    </select>
+                </div>
+
+                <!-- Aquí se mostrarán los mensajes de error o de éxito -->
+                <p id="mensaje-vehiculo"></p>
+
+                <input type="button" value="Añadir vehículo" id="anadir-vehiculo">
+            </form>
+        </section>
+
+        <!-- Sección de citas: listado y formulario para pedir una nueva -->
+        <section id="citas">
+            <h2>Mis citas</h2>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Vehículo</th>
+                        <th>Motivo</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <!-- Aquí se mostrarán las citas del cliente con el estado de cada reparación -->
+                <tbody id="lista-citas">
+                </tbody>
+            </table>
+
+            <h3>Pedir cita</h3>
+            <form id="form-cita">
+                <div>
+                    <label for="vehiculo-cita">Vehículo: </label>
+                    <!-- Aquí se mostrarán los vehículos del cliente para elegir uno -->
+                    <select name="vehiculo_id" id="vehiculo-cita">
+                    </select>
+                </div>
+                <div>
+                    <label for="fecha-cita">Fecha: </label>
+                    <input type="datetime-local" name="fecha_cita" id="fecha-cita">
+                </div>
+                <div>
+                    <label for="motivo">Motivo: </label>
+                    <input type="text" name="motivo" id="motivo">
+                </div>
+
+                <!-- Aquí se mostrarán los mensajes de error o de éxito -->
+                <p id="mensaje-cita"></p>
+
+                <input type="button" value="Pedir cita" id="pedir-cita">
+            </form>
+        </section>
+
+        <!-- Sección de facturas: solo para consultarlas -->
+        <section id="facturas">
+            <h2>Mis facturas</h2>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Número</th>
+                        <th>Fecha</th>
+                        <th>Subtotal</th>
+                        <th>IVA</th>
+                        <th>Total</th>
+                        <th>Estado</th>
+                    </tr>
+                </thead>
+                <!-- Aquí se mostrarán las facturas del cliente -->
+                <tbody id="lista-facturas">
+                </tbody>
+            </table>
+        </section>
+    </main>
+</body>
+</html>

@@ -1,0 +1,268 @@
+/* Colores de MotorFix: los mismos que en el login */
+:root {
+    --color-fondo: #1f2328;
+    --color-tarjeta: #ffffff;
+    --color-principal: #f57c00;
+    --color-texto: #2b2f33;
+    --color-texto-suave: #6b7178;
+}
+
+/* Configuración general con el mismo fondo de rayas que el login */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--color-fondo);
+    background-image: repeating-linear-gradient(
+        45deg,
+        rgba(255, 255, 255, 0.03) 0,
+        rgba(255, 255, 255, 0.03) 2px,
+        transparent 2px,
+        transparent 14px
+    );
+    color: var(--color-texto);
+    margin: 0;
+    min-height: 100vh;
+}
+
+/* Cabecera: logo a la izquierda y botón de cerrar sesión a la derecha */
+header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px 30px;
+    background-color: #16191d;
+    border-bottom: 4px solid var(--color-principal);
+}
+
+/* Logo de texto: "Motor" en blanco y "Fix" en naranja */
+h1 {
+    color: #ffffff;
+    font-size: 1.6rem;
+    font-weight: 800;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin: 0;
+}
+
+h1 span {
+    color: var(--color-principal);
+}
+
+/* Botón de cerrar sesión con borde naranja */
+#cerrar-sesion {
+    padding: 8px 16px;
+    border: 2px solid var(--color-principal);
+    border-radius: 6px;
+    background-color: transparent;
+    color: var(--color-principal);
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+#cerrar-sesion:hover {
+    background-color: var(--color-principal);
+    color: #ffffff;
+}
+
+/* Menú de secciones en una fila */
+nav ul {
+    display: flex;
+    gap: 10px;
+    list-style: none;
+    margin: 0;
+    padding: 15px 30px;
+}
+
+nav a {
+    display: block;
+    padding: 8px 16px;
+    border-radius: 6px;
+    color: #ffffff;
+    text-decoration: none;
+    font-weight: 600;
+    transition: background-color 0.2s;
+}
+
+nav a:hover {
+    background-color: var(--color-principal);
+}
+
+/* Contenido centrado con un ancho máximo */
+main {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 10px 30px 30px;
+}
+
+/* Cada sección es una tarjeta blanca con la franja naranja arriba, como el login */
+section {
+    background-color: var(--color-tarjeta);
+    border-top: 6px solid var(--color-principal);
+    border-radius: 10px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+    padding: 25px 30px;
+    margin-bottom: 25px;
+}
+
+h2 {
+    margin: 0 0 20px;
+}
+
+h3 {
+    margin: 30px 0 15px;
+    color: var(--color-texto-suave);
+}
+
+/* Tablas a todo el ancho con la cabecera en gris oscuro */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+th {
+    background-color: var(--color-texto);
+    color: #ffffff;
+    text-align: left;
+    padding: 10px;
+}
+
+td {
+    padding: 10px;
+    border-bottom: 1px solid #dfe2e6;
+}
+
+/* Formularios: los campos en columnas que se reparten el ancho */
+form {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 15px 20px;
+}
+
+form div {
+    display: flex;
+    flex-direction: column;
+}
+
+label {
+    font-weight: 600;
+    margin-bottom: 6px;
+    font-size: 14px;
+}
+
+/* Campos de texto, fechas y desplegables: al enfocarlos se marcan en naranja */
+input[type="text"],
+input[type="datetime-local"],
+select {
+    padding: 10px 12px;
+    border: 2px solid #dfe2e6;
+    border-radius: 6px;
+    font-size: 15px;
+    font-family: inherit;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+input[type="text"]:focus,
+input[type="datetime-local"]:focus,
+select:focus {
+    border-color: var(--color-principal);
+    box-shadow: 0 0 0 3px rgba(245, 124, 0, 0.2);
+    outline: none;
+}
+
+/* Botones de los formularios en naranja, en su propia fila */
+form input[type="button"] {
+    grid-column: 1 / -1;
+    justify-self: start;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 6px;
+    background-color: var(--color-principal);
+    color: #ffffff;
+    font-size: 15px;
+    font-weight: 700;
+    text-transform: uppercase;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+form input[type="button"]:hover {
+    background-color: #e06f00;
+}
+
+form input[type="button"]:active {
+    transform: scale(0.98);
+}
+
+/* Mensajes de error o de éxito: solo se ven cuando tienen texto */
+form p {
+    grid-column: 1 / -1;
+    margin: 0;
+    padding: 10px;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+form p:empty {
+    display: none;
+}
+
+form p.error {
+    background-color: #fdecea;
+    color: #c62828;
+}
+
+form p.exito {
+    background-color: #e8f5e9;
+    color: #2e7d32;
+}
+
+/* Móviles: menos márgenes, campos en una sola columna y tablas que se desplazan de lado */
+@media (max-width: 600px) {
+    header,
+    nav ul {
+        padding: 12px 15px;
+    }
+
+    h1 {
+        font-size: 1.3rem;
+    }
+
+    /* Los enlaces del menú bajan de línea si no caben */
+    nav ul {
+        flex-wrap: wrap;
+    }
+
+    main {
+        padding: 5px 10px 20px;
+    }
+
+    section {
+        padding: 20px 15px;
+    }
+
+    /* La tabla se puede mover de lado con el dedo en vez de salirse de la tarjeta */
+    table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    form {
+        grid-template-columns: 1fr;
+    }
+
+    /* Campos y botones un poco más altos para pulsarlos mejor con el dedo, igual que en el login */
+    input[type="text"],
+    input[type="datetime-local"],
+    select {
+        padding: 14px;
+        font-size: 16px;
+    }
+
+    form input[type="button"] {
+        justify-self: stretch;
+        padding: 14px;
+        font-size: 16px;
+    }
+}
