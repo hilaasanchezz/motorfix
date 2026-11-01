@@ -216,3 +216,53 @@ form p.exito {
     background-color: #e8f5e9;
     color: #2e7d32;
 }
+
+/* Móviles: menos márgenes, campos en una sola columna y tablas que se desplazan de lado */
+@media (max-width: 600px) {
+    header,
+    nav ul {
+        padding: 12px 15px;
+    }
+
+    h1 {
+        font-size: 1.3rem;
+    }
+
+    /* Los enlaces del menú bajan de línea si no caben */
+    nav ul {
+        flex-wrap: wrap;
+    }
+
+    main {
+        padding: 5px 10px 20px;
+    }
+
+    section {
+        padding: 20px 15px;
+    }
+
+    /* La tabla se puede mover de lado con el dedo en vez de salirse de la tarjeta */
+    table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+
+    form {
+        grid-template-columns: 1fr;
+    }
+
+    /* Campos y botones un poco más altos para pulsarlos mejor con el dedo, igual que en el login */
+    input[type="text"],
+    input[type="datetime-local"],
+    select {
+        padding: 14px;
+        font-size: 16px;
+    }
+
+    form input[type="button"] {
+        justify-self: stretch;
+        padding: 14px;
+        font-size: 16px;
+    }
+}
