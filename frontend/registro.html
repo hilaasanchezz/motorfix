@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MotorFix - Crear cuenta</title>
+    <link rel="stylesheet" href="login.css">
+    <link rel="stylesheet" href="registro.css">
+</head>
+<body>
+    <main class="login tarjeta-registro">
+        <h1>Motor<span>Fix</span></h1>
+        <p class="subtitulo">Crea tu cuenta de cliente</p>
+
+        <form id="form-registro">
+            <div class="campos">
+                <div>
+                    <label for="nombre">Nombre: </label>
+                    <input type="text" name="nombre" id="nombre">
+                </div>
+                <div>
+                    <label for="apellidos">Apellidos: </label>
+                    <input type="text" name="apellidos" id="apellidos">
+                </div>
+                <div>
+                    <label for="dni">DNI: </label>
+                    <input type="text" name="dni" id="dni">
+                </div>
+                <div>
+                    <label for="telefono">Teléfono: </label>
+                    <input type="text" name="telefono" id="telefono">
+                </div>
+                <div class="campo-completo">
+                    <label for="direccion">Dirección: </label>
+                    <input type="text" name="direccion" id="direccion">
+                </div>
+                <div class="campo-completo">
+                    <label for="email">Email: </label>
+                    <input type="text" name="email" id="email">
+                </div>
+                <div class="campo-completo">
+                    <label for="password">Contraseña: </label>
+                    <input type="password" name="password" id="password">
+                </div>
+            </div>
+
+            <!-- Aquí se mostrarán los mensajes de error o de éxito -->
+            <p id="mensaje"></p>
+
+            <input type="button" value="Crear cuenta" id="crear">
+        </form>
+
+        <p class="registro">¿Ya tienes cuenta? <a href="login.html">Inicia sesión</a></p>
+    </main>
+</body>
+</html>
