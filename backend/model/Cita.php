@@ -90,4 +90,40 @@ class Cita {
             return [];
         }
     }
+
+    public function actualizar(): bool {
+        if (!in_array($this->estado, self::ESTADOS, true)) {
+            return false;
+        }
+
+        try {
+            $sql = "UPDATE citas
+                    SET vehiculo_id = :vehiculo_id, mecanico_id = :mecanico_id, fecha_cita = :fecha_cita,
+                        motivo = :motivo, estado = :estado, observaciones = :observaciones
+                    WHERE id = :id";
+
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([
+                ':id'            => $this->id,
+                ':vehiculo_id'   => $this->vehiculoId,
+                ':mecanico_id'   => $this->mecanicoId,
+                ':fecha_cita'    => $this->fechaCita,
+                ':motivo'        => $this->motivo,
+                ':estado'        => $this->estado,
+                ':observaciones' => $this->observaciones,
+            ]);
+
+            // rowCount() sería 0 si los datos no cambian, así que se comprueba
+            // con existe() que la cita está en la tabla
+            return $stmt->rowCount() > 0 || $this->existe();
+        } catch (PDOException $e) {
+            return false;
+        }
+    }
+
+    private function existe(): bool {
+        $stmt = $this->pdo->prepare("SELECT 1 FROM citas WHERE id = :id");
+        $stmt->execute([':id' => $this->id]);
+        return (bool) $stmt->fetchColumn();
+    }
 }
