@@ -27,4 +27,31 @@ class Cita {
         $this->observaciones = $observaciones;
         $this->pdo           = Conection::getInstance()->getPDO();
     }
+
+    public function insertar(): int|false {
+        // El estado tiene que ser uno de los del ENUM
+        if (!in_array($this->estado, self::ESTADOS, true)) {
+            return false;
+        }
+
+        try {
+            $sql = "INSERT INTO citas (vehiculo_id, mecanico_id, fecha_cita, motivo, estado, observaciones)
+                    VALUES (:vehiculo_id, :mecanico_id, :fecha_cita, :motivo, :estado, :observaciones)";
+
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([
+                ':vehiculo_id'   => $this->vehiculoId,
+                ':mecanico_id'   => $this->mecanicoId,
+                ':fecha_cita'    => $this->fechaCita,
+                ':motivo'        => $this->motivo,
+                ':estado'        => $this->estado,
+                ':observaciones' => $this->observaciones,
+            ]);
+
+            $this->id = (int) $this->pdo->lastInsertId();
+            return $this->id;
+        } catch (PDOException $e) {
+            return false;
+        }
+    }
 }
