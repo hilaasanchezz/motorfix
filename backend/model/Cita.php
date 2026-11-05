@@ -79,4 +79,15 @@ class Cita {
             return false;
         }
     }
+
+    public static function listar(): array {
+        try {
+            $sql = "SELECT id, vehiculo_id, mecanico_id, fecha_solicitud, fecha_cita, motivo, estado, observaciones
+                    FROM citas ORDER BY fecha_cita";
+
+            return Conection::getInstance()->getPDO()->query($sql)->fetchAll();
+        } catch (PDOException $e) {
+            return [];
+        }
+    }
 }
