@@ -34,4 +34,36 @@ class Factura {
         $this->estado        = $estado;
         $this->pdo           = Conection::getInstance()->getPDO();
     }
+
+    public function insertar(): int|false {
+        // El estado tiene que ser uno de los del ENUM
+        if (!in_array($this->estado, self::ESTADOS, true)) {
+            return false;
+        }
+
+        try {
+            $sql = "INSERT INTO facturas (numero, cita_id, mano_obra, repuestos, subtotal, iva_porcentaje,
+                                          iva_importe, total, estado)
+                    VALUES (:numero, :cita_id, :mano_obra, :repuestos, :subtotal, :iva_porcentaje,
+                            :iva_importe, :total, :estado)";
+
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([
+                ':numero'         => $this->numero,
+                ':cita_id'        => $this->citaId,
+                ':mano_obra'      => $this->manoObra,
+                ':repuestos'      => $this->repuestos,
+                ':subtotal'       => $this->subtotal,
+                ':iva_porcentaje' => $this->ivaPorcentaje,
+                ':iva_importe'    => $this->ivaImporte,
+                ':total'          => $this->total,
+                ':estado'         => $this->estado,
+            ]);
+
+            $this->id = (int) $this->pdo->lastInsertId();
+            return $this->id;
+        } catch (PDOException $e) {
+            return false;
+        }
+    }
 }
