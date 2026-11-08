@@ -79,8 +79,21 @@ switch ($request["action"] ?? "") {
             $success = false;
             $msg = "Email o contraseña incorrectos";
         } else {
-            $msg = "Sesión iniciada correctamente";
-            $data = $usuario;
+            /* Crea un objeto Usuario con el id y el email del usuario que ha iniciado sesión
+               para poder llamar a generarAuthKey(), que guarda un token nuevo en la BD */
+            $usuarioLogueado = new Usuario($usuario["id"], null, $usuario["email"]);
+            $authKey = $usuarioLogueado->generarAuthKey();
+
+            if ($authKey === false) {
+                $success = false;
+                $msg = "No se ha podido iniciar sesión, inténtalo de nuevo";
+            } else {
+                /* Devuelve los datos del usuario junto con el token. El navegador lo guardará
+                   y lo enviará en cada petición para demostrar que ha iniciado sesión */
+                $msg = "Sesión iniciada correctamente";
+                $data = $usuario;
+                $data["auth_key"] = $authKey;
+            }
         }
         break;
 
