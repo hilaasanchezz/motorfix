@@ -95,4 +95,16 @@ class Factura {
             return false;
         }
     }
+
+    public static function listar(): array {
+        try {
+            $sql = "SELECT id, numero, cita_id, fecha, mano_obra, repuestos, subtotal, iva_porcentaje,
+                           iva_importe, total, estado
+                    FROM facturas ORDER BY fecha";
+
+            return Conection::getInstance()->getPDO()->query($sql)->fetchAll();
+        } catch (PDOException $e) {
+            return [];
+        }
+    }
 }
