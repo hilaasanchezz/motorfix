@@ -35,6 +35,20 @@ class Factura {
         $this->pdo           = Conection::getInstance()->getPDO();
     }
 
+    public function __get(string $propiedad): mixed {
+        if ($propiedad === 'pdo' || !property_exists($this, $propiedad)) {
+            return null;
+        }
+        return $this->$propiedad;
+    }
+
+    public function __set(string $propiedad, mixed $valor): void {
+        if (in_array($propiedad, ['id', 'pdo'], true) || !property_exists($this, $propiedad)) {
+            return;
+        }
+        $this->$propiedad = $valor;
+    }
+
     public function insertar(): int|false {
         // El estado tiene que ser uno de los del ENUM
         if (!in_array($this->estado, self::ESTADOS, true)) {
