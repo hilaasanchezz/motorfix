@@ -25,8 +25,24 @@ function login() {
     // Convierte el texto que devuelve el servidor en un objeto de JavaScript
     .then((res) => res.json())
     .then((response) => {
-        // Muestra el mensaje del servidor en verde si ha ido bien o en rojo si no
-        mostrarMensaje(response.msg, response.success);
+        if (!response.success) {
+            // Si el login ha fallado muestra el mensaje del servidor en rojo
+            mostrarMensaje(response.msg, false);
+            return;
+        }
+
+        /* Guarda el token en localStorage, la memoria del navegador que no se borra
+           al cambiar de página. Las demás pantallas lo leerán con localStorage.getItem()
+           para enviarlo al servidor en cada petición */
+        localStorage.setItem("auth_key", response.data.auth_key);
+
+        /* Lleva a cada usuario a su panel según su rol. De momento solo existe
+           el panel de cliente; los de oficina, mecánico y admin llegarán en la semana 5 */
+        if (response.data.rol === "cliente") {
+            window.location.href = "cliente.html";
+        } else {
+            mostrarMensaje("Tu panel todavía no está disponible", false);
+        }
     })
     // Si la petición falla (por ejemplo, el servidor no responde) muestra un error
     .catch((error) => {
