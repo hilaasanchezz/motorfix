@@ -66,4 +66,33 @@ class Factura {
             return false;
         }
     }
+
+    public function obtener(): array|false {
+        try {
+            $sql = "SELECT id, numero, cita_id, fecha, mano_obra, repuestos, subtotal, iva_porcentaje,
+                           iva_importe, total, estado
+                    FROM facturas WHERE id = :id";
+
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([':id' => $this->id]);
+            $datos = $stmt->fetch();
+
+            if ($datos) {
+                $this->numero        = $datos['numero'];
+                $this->citaId        = (int) $datos['cita_id'];
+                $this->manoObra      = (float) $datos['mano_obra'];
+                $this->repuestos     = (float) $datos['repuestos'];
+                $this->subtotal      = (float) $datos['subtotal'];
+                $this->ivaPorcentaje = (float) $datos['iva_porcentaje'];
+                $this->ivaImporte    = (float) $datos['iva_importe'];
+                $this->total         = (float) $datos['total'];
+                $this->estado        = $datos['estado'];
+                return $datos;
+            }
+
+            return false;
+        } catch (PDOException $e) {
+            return false;
+        }
+    }
 }
