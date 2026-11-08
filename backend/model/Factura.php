@@ -107,4 +107,44 @@ class Factura {
             return [];
         }
     }
+
+    public function actualizar(): bool {
+        if (!in_array($this->estado, self::ESTADOS, true)) {
+            return false;
+        }
+
+        try {
+            $sql = "UPDATE facturas
+                    SET numero = :numero, cita_id = :cita_id, mano_obra = :mano_obra, repuestos = :repuestos,
+                        subtotal = :subtotal, iva_porcentaje = :iva_porcentaje, iva_importe = :iva_importe,
+                        total = :total, estado = :estado
+                    WHERE id = :id";
+
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([
+                ':id'             => $this->id,
+                ':numero'         => $this->numero,
+                ':cita_id'        => $this->citaId,
+                ':mano_obra'      => $this->manoObra,
+                ':repuestos'      => $this->repuestos,
+                ':subtotal'       => $this->subtotal,
+                ':iva_porcentaje' => $this->ivaPorcentaje,
+                ':iva_importe'    => $this->ivaImporte,
+                ':total'          => $this->total,
+                ':estado'         => $this->estado,
+            ]);
+
+            // rowCount() sería 0 si los datos no cambian, así que se comprueba
+            // con existe() que la factura está en la tabla
+            return $stmt->rowCount() > 0 || $this->existe();
+        } catch (PDOException $e) {
+            return false;
+        }
+    }
+
+    private function existe(): bool {
+        $stmt = $this->pdo->prepare("SELECT 1 FROM facturas WHERE id = :id");
+        $stmt->execute([':id' => $this->id]);
+        return (bool) $stmt->fetchColumn();
+    }
 }
