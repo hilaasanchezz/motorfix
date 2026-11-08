@@ -1,5 +1,25 @@
 <?php
 
+/**
+ * Servicio web de autenticación: registro de clientes y login.
+ *
+ * Recibe por POST un JSON con la acción y sus datos, y devuelve siempre
+ * un JSON con la estructura {success, msg, data}.
+ *
+ * Acciones:
+ * - registro: crea el usuario con rol cliente y su ficha de cliente.
+ *   data: nombre, apellidos, dni, telefono, direccion, email, password
+ * - login: comprueba el email y la contraseña.
+ *   data: email, password
+ *
+ * Ejemplo de petición:
+ * <code>
+ * {"action": "login", "data": {"email": "juan@correo.es", "password": "MotorFix2026"}}
+ * </code>
+ *
+ * @author Hilario Sánchez Pérez
+ */
+
 require_once __DIR__ . '/model/Usuario.php';
 require_once __DIR__ . '/model/Cliente.php';
 
