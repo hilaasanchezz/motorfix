@@ -305,6 +305,23 @@ class Usuario {
         }
     }
 
+    public function borrarAuthKey(): bool {
+        try {
+            /* Deja el token y su caducidad a NULL. Así el token que tenga guardado
+               el navegador ya no sirve y el usuario tendrá que volver a iniciar sesión */
+            $sql = "UPDATE usuarios SET auth_key = NULL, auth_key_expira = NULL WHERE id = :id";
+
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([':id' => $this->id]);
+
+            /* rowCount() sería 0 si el usuario ya no tenía token, así que se comprueba
+               con existe() que el usuario está en la tabla */
+            return $stmt->rowCount() > 0 || $this->existe();
+        } catch (PDOException $e) {
+            return false;
+        }
+    }
+
     /**
      * Comprueba si existe un usuario con el id actual.
      *
