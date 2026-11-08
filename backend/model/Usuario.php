@@ -22,6 +22,9 @@ class Usuario {
     /** @var string[] Roles permitidos (ENUM de la columna rol) */
     public const ROLES = ['admin', 'oficina', 'mecanico', 'cliente'];
 
+    // Horas que dura el token (auth_key) desde que el usuario inicia sesión
+    public const HORAS_AUTH_KEY = 10;
+
     /** @var int|null Identificador del usuario (null si aún no está insertado) */
     private ?int $id;
     /** @var string|null Nombre del usuario */
@@ -241,6 +244,38 @@ class Usuario {
             }
 
             return false;
+        } catch (PDOException $e) {
+            return false;
+        }
+    }
+
+    public function generarAuthKey(): string|false {
+        /* Junta el email, la fecha actual y una frase aleatoria para que la cadena
+           sea distinta cada vez. random_bytes(16) da 16 bytes al azar y bin2hex()
+           los pasa a texto (letras y números) para poder unirlos al resto */
+        $cadena = $this->email . date('Y-m-d H:i:s') . bin2hex(random_bytes(16));
+
+        /* Convierte la cadena en un hash SHA-256: siempre da 64 caracteres
+           y no se puede volver atrás para sacar el email o la frase */
+        $authKey = hash('sha256', $cadena);
+
+        try {
+            /* Guarda el token en el usuario y calcula cuándo caduca:
+               DATE_ADD(NOW(), INTERVAL 10 HOUR) es la hora actual de MySQL más 10 horas */
+            $sql = "UPDATE usuarios
+                    SET auth_key = :auth_key, auth_key_expira = DATE_ADD(NOW(), INTERVAL :horas HOUR)
+                    WHERE id = :id";
+
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([
+                ':auth_key' => $authKey,
+                ':horas'    => self::HORAS_AUTH_KEY,
+                ':id'       => $this->id,
+            ]);
+
+            /* Si se ha actualizado una fila devuelve el token para enviarlo al navegador.
+               Si rowCount() es 0, no existía ningún usuario con ese id y devuelve false */
+            return $stmt->rowCount() > 0 ? $authKey : false;
         } catch (PDOException $e) {
             return false;
         }
