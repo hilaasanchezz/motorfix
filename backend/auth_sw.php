@@ -49,7 +49,20 @@ switch ($request["action"] ?? "") {
         }
         break;
 
-    // Aquí irá la acción de login
+    case "login":
+        $datos = $request["data"];
+
+        // Comprueba el email y la contraseña con password_verify()
+        $usuario = Usuario::login($datos["email"], $datos["password"]);
+
+        if ($usuario === false) {
+            $success = false;
+            $msg = "Email o contraseña incorrectos";
+        } else {
+            $msg = "Sesión iniciada correctamente";
+            $data = $usuario;
+        }
+        break;
 
     default:
         $success = false;
