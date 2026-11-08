@@ -1,7 +1,7 @@
 <?php
 
 /**
- * Servicio web de autenticación: registro de clientes y login.
+ * Servicio web de autenticación: registro de clientes, login y logout.
  *
  * Recibe por POST un JSON con la acción y sus datos, y devuelve siempre
  * un JSON con la estructura {success, msg, data}.
@@ -9,12 +9,16 @@
  * Acciones:
  * - registro: crea el usuario con rol cliente y su ficha de cliente.
  *   data: nombre, apellidos, dni, telefono, direccion, email, password
- * - login: comprueba el email y la contraseña.
+ * - login: comprueba el email y la contraseña y genera un token (auth_key).
  *   data: email, password
+ *   Devuelve en data los datos del usuario y el auth_key.
+ * - logout: borra el token del usuario.
+ *   auth_key: el token, fuera de data
  *
- * Ejemplo de petición:
+ * Ejemplos de petición:
  * <code>
  * {"action": "login", "data": {"email": "juan@correo.es", "password": "MotorFix2026"}}
+ * {"action": "logout", "auth_key": "..."}
  * </code>
  *
  * @author Hilario Sánchez Pérez
