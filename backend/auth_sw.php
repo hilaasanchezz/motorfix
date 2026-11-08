@@ -69,6 +69,9 @@ switch ($request["action"] ?? "") {
                 $pdo->commit();
                 $msg = "Cuenta creada correctamente";
                 $data = ["usuario_id" => $usuarioId, "cliente_id" => $clienteId];
+
+                // Genera el token para que el cliente entre en su panel sin tener que iniciar sesión
+                $data["auth_key"] = $usuario->generarAuthKey();
             }
         }
         break;
