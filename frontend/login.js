@@ -1,7 +1,23 @@
+/**
+ * Controlador de la vista login.html.
+ *
+ * Envía el email y la contraseña a auth_sw.php con fetch(), guarda el token
+ * (auth_key) en localStorage y lleva al usuario a su panel según su rol.
+ *
+ * @author Hilario Sánchez Pérez
+ */
+
 // Dirección del servicio web de autenticación (sube de frontend/ a backend/)
 const url = "../backend/auth_sw.php";
 
-// Se llama desde el botón "Entrar" de login.html con onClick="login()"
+/**
+ * Inicia sesión con el email y la contraseña del formulario.
+ *
+ * Se llama desde el botón "Entrar" de login.html con onClick="login()".
+ * Si va bien, guarda el auth_key en localStorage y redirige: el cliente va a
+ * cliente.html y el resto de roles ven un aviso (sus paneles llegan en la semana 5).
+ * Si falla, muestra el mensaje del servidor en rojo.
+ */
 function login() {
     // Recoge el email y la contraseña que ha escrito el usuario
     let usuario = {};
@@ -51,8 +67,13 @@ function login() {
     });
 }
 
-/* Escribe el texto en el párrafo #mensaje y le pone la clase "exito" o "error"
-   para que login.css lo pinte en verde o en rojo */
+/**
+ * Escribe el texto en el párrafo #mensaje y le pone la clase "exito" o "error"
+ * para que login.css lo pinte en verde o en rojo.
+ *
+ * @param {string}  texto Mensaje que se muestra
+ * @param {boolean} exito true para verde (éxito), false para rojo (error)
+ */
 function mostrarMensaje(texto, exito) {
     const mensaje = document.getElementById("mensaje");
     mensaje.textContent = texto;

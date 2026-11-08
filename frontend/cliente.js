@@ -1,7 +1,22 @@
+/**
+ * Controlador de la vista cliente.html (panel del cliente).
+ *
+ * De momento gestiona el cierre de sesión. La gestión de vehículos, citas
+ * y facturas se añadirá en la semana 4.
+ *
+ * @author Hilario Sánchez Pérez
+ */
+
 // Dirección del servicio web de autenticación (sube de frontend/ a backend/)
 const urlAuth = "../backend/auth_sw.php";
 
-// Se llama desde el botón "Cerrar sesión" de cliente.html con onClick="cerrarSesion()"
+/**
+ * Cierra la sesión del cliente.
+ *
+ * Se llama desde el botón "Cerrar sesión" de cliente.html con onClick="cerrarSesion()".
+ * Pide a auth_sw.php que borre el token de la BD, lo borra también de localStorage
+ * y vuelve a login.html.
+ */
 function cerrarSesion() {
     /* Prepara la petición de logout con el token que se guardó en localStorage al
        iniciar sesión. El token va junto a "action", fuera de "data" */

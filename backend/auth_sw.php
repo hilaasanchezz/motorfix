@@ -9,6 +9,7 @@
  * Acciones:
  * - registro: crea el usuario con rol cliente y su ficha de cliente.
  *   data: nombre, apellidos, dni, telefono, direccion, email, password
+ *   Devuelve en data usuario_id, cliente_id y el auth_key para entrar sin iniciar sesión.
  * - login: comprueba el email y la contraseña y genera un token (auth_key).
  *   data: email, password
  *   Devuelve en data los datos del usuario y el auth_key.

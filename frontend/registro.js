@@ -1,7 +1,22 @@
+/**
+ * Controlador de la vista registro.html.
+ *
+ * Envía los datos del formulario a auth_sw.php con fetch() para crear la cuenta
+ * de cliente, guarda el token (auth_key) en localStorage y lleva al cliente a su panel.
+ *
+ * @author Hilario Sánchez Pérez
+ */
+
 // Dirección del servicio web de autenticación (sube de frontend/ a backend/)
 const url = "../backend/auth_sw.php";
 
-// Se llama desde el botón "Crear cuenta" de registro.html con onClick="registro()"
+/**
+ * Crea la cuenta de cliente con los datos del formulario.
+ *
+ * Se llama desde el botón "Crear cuenta" de registro.html con onClick="registro()".
+ * Si va bien y llega un auth_key, lo guarda en localStorage y redirige a cliente.html.
+ * Si falla (por ejemplo, email o DNI repetidos), muestra el mensaje del servidor en rojo.
+ */
 function registro() {
     // Recoge los datos que ha escrito el cliente en el formulario
     let cliente = {};
@@ -52,8 +67,13 @@ function registro() {
     });
 }
 
-/* Escribe el texto en el párrafo #mensaje y le pone la clase "exito" o "error"
-   para que login.css lo pinte en verde o en rojo */
+/**
+ * Escribe el texto en el párrafo #mensaje y le pone la clase "exito" o "error"
+ * para que login.css lo pinte en verde o en rojo.
+ *
+ * @param {string}  texto Mensaje que se muestra
+ * @param {boolean} exito true para verde (éxito), false para rojo (error)
+ */
 function mostrarMensaje(texto, exito) {
     const mensaje = document.getElementById("mensaje");
     mensaje.textContent = texto;
