@@ -5,8 +5,8 @@ require_once __DIR__ . '/conectionBD.php';
 /**
  * Modelo de los usuarios de MotorFix (tabla usuarios).
  *
- * Gestiona el CRUD de usuarios y el login. Las contraseñas se guardan
- * cifradas con BCrypt y nunca se devuelven fuera de la clase.
+ * Gestiona el CRUD de usuarios, el login y el token de acceso (auth_key).
+ * Las contraseñas se guardan cifradas con BCrypt y nunca se devuelven fuera de la clase.
  *
  * Ejemplo de uso:
  * <code>
@@ -14,6 +14,8 @@ require_once __DIR__ . '/conectionBD.php';
  * $id = $usuario->insertar();
  *
  * $datos = Usuario::login('ana@motorfix.es', 'secreta');
+ * $token = (new Usuario($datos['id'], null, $datos['email']))->generarAuthKey();
+ * $logueado = Usuario::comprobarAuthKey($token);
  * </code>
  *
  * @author Hilario Sánchez Pérez
@@ -21,6 +23,9 @@ require_once __DIR__ . '/conectionBD.php';
 class Usuario {
     /** @var string[] Roles permitidos (ENUM de la columna rol) */
     public const ROLES = ['admin', 'oficina', 'mecanico', 'cliente'];
+
+    /** @var int Horas que dura el token (auth_key) desde que el usuario inicia sesión */
+    public const HORAS_AUTH_KEY = 10;
 
     /** @var int|null Identificador del usuario (null si aún no está insertado) */
     private ?int $id;
@@ -241,6 +246,101 @@ class Usuario {
             }
 
             return false;
+        } catch (PDOException $e) {
+            return false;
+        }
+    }
+
+    /**
+     * Genera un token (auth_key) nuevo para el usuario con el id actual y lo guarda
+     * en la BD con su caducidad (HORAS_AUTH_KEY horas desde ahora).
+     *
+     * El token es un hash SHA-256 del email, la fecha actual y una frase aleatoria.
+     *
+     * @return string|false El token de 64 caracteres, o false si el usuario no existe
+     *                      o falla la consulta
+     */
+    public function generarAuthKey(): string|false {
+        /* Junta el email, la fecha actual y una frase aleatoria para que la cadena
+           sea distinta cada vez. random_bytes(16) da 16 bytes al azar y bin2hex()
+           los pasa a texto (letras y números) para poder unirlos al resto */
+        $cadena = $this->email . date('Y-m-d H:i:s') . bin2hex(random_bytes(16));
+
+        /* Convierte la cadena en un hash SHA-256: siempre da 64 caracteres
+           y no se puede volver atrás para sacar el email o la frase */
+        $authKey = hash('sha256', $cadena);
+
+        try {
+            /* Guarda el token en el usuario y calcula cuándo caduca:
+               DATE_ADD(NOW(), INTERVAL 10 HOUR) es la hora actual de MySQL más 10 horas */
+            $sql = "UPDATE usuarios
+                    SET auth_key = :auth_key, auth_key_expira = DATE_ADD(NOW(), INTERVAL :horas HOUR)
+                    WHERE id = :id";
+
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([
+                ':auth_key' => $authKey,
+                ':horas'    => self::HORAS_AUTH_KEY,
+                ':id'       => $this->id,
+            ]);
+
+            /* Si se ha actualizado una fila devuelve el token para enviarlo al navegador.
+               Si rowCount() es 0, no existía ningún usuario con ese id y devuelve false */
+            return $stmt->rowCount() > 0 ? $authKey : false;
+        } catch (PDOException $e) {
+            return false;
+        }
+    }
+
+    /**
+     * Comprueba si un token es válido: existe, no ha caducado y su usuario está activo.
+     *
+     * @param string|null $authKey Token enviado por el navegador
+     * @return array|false Los datos del usuario (id, nombre, email, rol), o false si el token
+     *                     no es válido, no llega o falla la consulta
+     */
+    public static function comprobarAuthKey(?string $authKey): array|false {
+        // Si no llega ningún token, no hace falta consultar la base de datos
+        if (empty($authKey)) {
+            return false;
+        }
+
+        try {
+            /* Busca el usuario que tiene ese token. Solo vale si todavía no ha caducado
+               (auth_key_expira es posterior a la hora actual NOW()) y si el usuario está activo */
+            $sql = "SELECT id, nombre, email, rol
+                    FROM usuarios
+                    WHERE auth_key = :auth_key AND auth_key_expira > NOW() AND activo = 1";
+
+            $stmt = Conection::getInstance()->getPDO()->prepare($sql);
+            $stmt->execute([':auth_key' => $authKey]);
+
+            /* fetch() devuelve los datos del usuario si encuentra el token,
+               o false si no existe, ha caducado o el usuario no está activo */
+            return $stmt->fetch();
+        } catch (PDOException $e) {
+            return false;
+        }
+    }
+
+    /**
+     * Borra el token del usuario con el id actual (logout).
+     *
+     * @return bool true si el usuario existe (tuviera token o no), false si no existe
+     *              o falla la consulta
+     */
+    public function borrarAuthKey(): bool {
+        try {
+            /* Deja el token y su caducidad a NULL. Así el token que tenga guardado
+               el navegador ya no sirve y el usuario tendrá que volver a iniciar sesión */
+            $sql = "UPDATE usuarios SET auth_key = NULL, auth_key_expira = NULL WHERE id = :id";
+
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([':id' => $this->id]);
+
+            /* rowCount() sería 0 si el usuario ya no tenía token, así que se comprueba
+               con existe() que el usuario está en la tabla */
+            return $stmt->rowCount() > 0 || $this->existe();
         } catch (PDOException $e) {
             return false;
         }
