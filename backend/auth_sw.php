@@ -97,6 +97,26 @@ switch ($request["action"] ?? "") {
         }
         break;
 
+    case "logout":
+        // Busca en la BD el usuario con ese token (devuelve false si no existe o ha caducado)
+        $usuario = Usuario::comprobarAuthKey($request["auth_key"] ?? null);
+
+        if ($usuario === false) {
+            $success = false;
+            $msg = "No hay ninguna sesión iniciada con ese token";
+        } else {
+            // Borra el token del usuario en la BD para que ya no sirva
+            $usuarioLogueado = new Usuario($usuario["id"]);
+
+            if ($usuarioLogueado->borrarAuthKey()) {
+                $msg = "Sesión cerrada correctamente";
+            } else {
+                $success = false;
+                $msg = "No se ha podido cerrar la sesión, inténtalo de nuevo";
+            }
+        }
+        break;
+
     default:
         $success = false;
         $msg = "Acción no soportada";
