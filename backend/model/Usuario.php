@@ -281,6 +281,30 @@ class Usuario {
         }
     }
 
+    public static function comprobarAuthKey(?string $authKey): array|false {
+        // Si no llega ningún token, no hace falta consultar la base de datos
+        if (empty($authKey)) {
+            return false;
+        }
+
+        try {
+            /* Busca el usuario que tiene ese token. Solo vale si todavía no ha caducado
+               (auth_key_expira es posterior a la hora actual NOW()) y si el usuario está activo */
+            $sql = "SELECT id, nombre, email, rol
+                    FROM usuarios
+                    WHERE auth_key = :auth_key AND auth_key_expira > NOW() AND activo = 1";
+
+            $stmt = Conection::getInstance()->getPDO()->prepare($sql);
+            $stmt->execute([':auth_key' => $authKey]);
+
+            /* fetch() devuelve los datos del usuario si encuentra el token,
+               o false si no existe, ha caducado o el usuario no está activo */
+            return $stmt->fetch();
+        } catch (PDOException $e) {
+            return false;
+        }
+    }
+
     /**
      * Comprueba si existe un usuario con el id actual.
      *
