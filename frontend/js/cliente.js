@@ -7,8 +7,8 @@
  * @author Hilario Sánchez Pérez
  */
 
-// Dirección del servicio web de autenticación (sube de frontend/ a backend/)
-const urlAuth = "../backend/auth_sw.php";
+// Dirección del servicio web de autenticación (sube de frontend/html/ a backend/sw/)
+const urlAuth = "../../backend/sw/auth_sw.php";
 
 /**
  * Cierra la sesión del cliente.

@@ -6,9 +6,9 @@
 header('Content-Type: application/json; charset=UTF-8');
 
 // Comprueba el token y deja en $usuarioAuth los datos del usuario que ha iniciado sesión
-require_once __DIR__ . '/auth.inc.php';
-require_once __DIR__ . '/model/Cliente.php';
-require_once __DIR__ . '/model/Vehiculo.php';
+require_once __DIR__ . '/../auth.inc.php';
+require_once __DIR__ . '/../model/Cliente.php';
+require_once __DIR__ . '/../model/Vehiculo.php';
 
 // Lee el JSON que envía el fetch() y lo convierte en un array asociativo
 $contenidoJSON = file_get_contents('php://input');

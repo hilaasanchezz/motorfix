@@ -25,8 +25,8 @@
  * @author Hilario Sánchez Pérez
  */
 
-require_once __DIR__ . '/model/Usuario.php';
-require_once __DIR__ . '/model/Cliente.php';
+require_once __DIR__ . '/../model/Usuario.php';
+require_once __DIR__ . '/../model/Cliente.php';
 
 // Indica que la respuesta es un JSON
 header('Content-Type: application/json; charset=UTF-8');

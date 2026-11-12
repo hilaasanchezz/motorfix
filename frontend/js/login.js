@@ -7,8 +7,8 @@
  * @author Hilario Sánchez Pérez
  */
 
-// Dirección del servicio web de autenticación (sube de frontend/ a backend/)
-const url = "../backend/auth_sw.php";
+// Dirección del servicio web de autenticación (sube de frontend/html/ a backend/sw/)
+const url = "../../backend/sw/auth_sw.php";
 
 /**
  * Inicia sesión con el email y la contraseña del formulario.
