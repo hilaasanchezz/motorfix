@@ -171,6 +171,20 @@ class Cliente {
         }
     }
 
+    // Busca el cliente que pertenece al usuario que ha iniciado sesión
+    public static function obtenerPorUsuario(int $usuarioId): array|false {
+        try {
+            $sql = "SELECT id, usuario_id, dni, nombre, apellidos, telefono, email, direccion, fecha_alta
+                    FROM clientes WHERE usuario_id = :usuario_id";
+
+            $stmt = Conection::getInstance()->getPDO()->prepare($sql);
+            $stmt->execute([':usuario_id' => $usuarioId]);
+            return $stmt->fetch();
+        } catch (PDOException $e) {
+            return false;
+        }
+    }
+
     /**
      * Actualiza todos los datos del cliente con el id actual.
      *
