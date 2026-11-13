@@ -119,3 +119,51 @@ function cargarVehiculos() {
         mensaje.className = "error";
     });
 }
+
+function anadirVehiculo() {
+    /* Prepara la petición con los datos del formulario. El token va junto a "action"
+       y los datos del vehículo dentro de "data" */
+    let request = {};
+    request.action = "insertar";
+    request.auth_key = localStorage.getItem("auth_key");
+    request.data = {
+        matricula: document.getElementById("matricula").value,
+        marca: document.getElementById("marca").value,
+        modelo: document.getElementById("modelo").value,
+        anio: document.getElementById("anio").value,
+        color: document.getElementById("color").value,
+        kilometros: document.getElementById("kilometros").value,
+        combustible: document.getElementById("combustible").value,
+    };
+
+    // Envía la petición por POST a vehiculo_sw.php
+    fetch(urlVehiculo, {
+        method: "POST",
+        body: JSON.stringify(request),
+        headers: {
+            "Content-Type": "application/json",
+        },
+    })
+    // Convierte el texto que devuelve el servidor en un objeto de JavaScript
+    .then((res) => res.json())
+    .then((response) => {
+        // Muestra el mensaje del servidor en verde si ha ido bien o en rojo si no
+        const mensaje = document.getElementById("mensaje-vehiculo");
+        mensaje.textContent = response.msg;
+        mensaje.className = response.success ? "exito" : "error";
+
+        if (response.success) {
+            /* Vacía el formulario para poder añadir otro vehículo y vuelve a cargar
+               la tabla para que aparezca el nuevo */
+            document.getElementById("form-vehiculo").reset();
+            cargarVehiculos();
+        }
+    })
+    // Si la petición falla (por ejemplo, el servidor no responde) muestra un error
+    .catch((error) => {
+        console.error("Error:", error);
+        const mensaje = document.getElementById("mensaje-vehiculo");
+        mensaje.textContent = "No se ha podido conectar con el servidor";
+        mensaje.className = "error";
+    });
+}

@@ -37,6 +37,35 @@ if ($usuarioAuth["rol"] !== "cliente") {
                 $msg = "Vehículos obtenidos correctamente";
                 break;
 
+            case "insertar":
+                $datos = $request["data"];
+
+                /* Convierte los campos vacíos en null: así la BD rechaza el vehículo si falta
+                   la matrícula, la marca o el modelo, y deja vacíos el año, el color y los kilómetros */
+                $matricula = $datos["matricula"] === "" ? null : $datos["matricula"];
+                $marca     = $datos["marca"] === "" ? null : $datos["marca"];
+                $modelo    = $datos["modelo"] === "" ? null : $datos["modelo"];
+                $color     = $datos["color"] === "" ? null : $datos["color"];
+
+                // El año y los kilómetros llegan como texto y se pasan a número entero
+                $anio       = $datos["anio"] === "" ? null : (int) $datos["anio"];
+                $kilometros = $datos["kilometros"] === "" ? null : (int) $datos["kilometros"];
+
+                /* Crea el vehículo con el id del cliente que ha iniciado sesión. No se usa
+                   ningún cliente_id que venga del navegador, así nadie puede añadirlo a otro cliente */
+                $vehiculo = new Vehiculo(null, $cliente["id"], $matricula, $marca, $modelo, $anio,
+                                         $color, $kilometros, $datos["combustible"]);
+                $vehiculoId = $vehiculo->insertar();
+
+                if ($vehiculoId === false) {
+                    $success = false;
+                    $msg = "No se ha podido añadir el vehículo (¿matrícula repetida o falta algún dato?)";
+                } else {
+                    $msg = "Vehículo añadido correctamente";
+                    $data = ["id" => $vehiculoId];
+                }
+                break;
+
             default:
                 $success = false;
                 $msg = "Acción no soportada";
