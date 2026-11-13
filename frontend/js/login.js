@@ -7,8 +7,8 @@
  * @author Hilario Sánchez Pérez
  */
 
-// Dirección del servicio web de autenticación (sube de frontend/ a backend/)
-const url = "../backend/auth_sw.php";
+// Dirección del servicio web de autenticación (sube de frontend/html/ a backend/sw/)
+const url = "../../backend/sw/auth_sw.php";
 
 /**
  * Inicia sesión con el email y la contraseña del formulario.
@@ -19,15 +19,14 @@ const url = "../backend/auth_sw.php";
  * Si falla, muestra el mensaje del servidor en rojo.
  */
 function login() {
-    // Recoge el email y la contraseña que ha escrito el usuario
-    let usuario = {};
-    usuario.email = document.getElementById("email").value;
-    usuario.password = document.getElementById("password").value;
-
-    // Prepara la petición con la acción y los datos que espera auth_sw.php
-    let request = {};
-    request.action = "login";
-    request.data = usuario;
+    // Prepara la petición con la acción y el email y la contraseña del formulario
+    let request = {
+        action: "login",
+        data: {
+            email: document.getElementById("email").value,
+            password: document.getElementById("password").value,
+        },
+    };
 
     /* Envía la petición por POST sin recargar la página. JSON.stringify() convierte
        el objeto en texto, que es lo que viaja entre el navegador y el servidor */

@@ -185,6 +185,20 @@ class Vehiculo {
         }
     }
 
+    // Devuelve los vehículos del cliente indicado ordenados por matrícula
+    public static function listarPorCliente(int $clienteId): array {
+        try {
+            $sql = "SELECT id, cliente_id, matricula, marca, modelo, anio, color, kilometros, combustible
+                    FROM vehiculos WHERE cliente_id = :cliente_id ORDER BY matricula";
+
+            $stmt = Conection::getInstance()->getPDO()->prepare($sql);
+            $stmt->execute([':cliente_id' => $clienteId]);
+            return $stmt->fetchAll();
+        } catch (PDOException $e) {
+            return [];
+        }
+    }
+
     /**
      * Actualiza todos los datos del vehículo con el id actual.
      *

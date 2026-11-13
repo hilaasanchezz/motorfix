@@ -10,7 +10,7 @@
  *
  * Ejemplo de uso en un servicio web:
  * <code>
- * require_once __DIR__ . '/auth.inc.php';
+ * require_once __DIR__ . '/../auth.inc.php';
  * </code>
  *
  * Ejemplo de petición:
