@@ -7,8 +7,8 @@
  * @author Hilario Sánchez Pérez
  */
 
-// Dirección del servicio web de autenticación (sube de frontend/ a backend/)
-const url = "../backend/auth_sw.php";
+// Dirección del servicio web de autenticación (sube de frontend/html/ a backend/sw/)
+const url = "../../backend/sw/auth_sw.php";
 
 /**
  * Crea la cuenta de cliente con los datos del formulario.
@@ -18,20 +18,19 @@ const url = "../backend/auth_sw.php";
  * Si falla (por ejemplo, email o DNI repetidos), muestra el mensaje del servidor en rojo.
  */
 function registro() {
-    // Recoge los datos que ha escrito el cliente en el formulario
-    let cliente = {};
-    cliente.nombre = document.getElementById("nombre").value;
-    cliente.apellidos = document.getElementById("apellidos").value;
-    cliente.dni = document.getElementById("dni").value;
-    cliente.telefono = document.getElementById("telefono").value;
-    cliente.direccion = document.getElementById("direccion").value;
-    cliente.email = document.getElementById("email").value;
-    cliente.password = document.getElementById("password").value;
-
-    // Prepara la petición con la acción y los datos que espera auth_sw.php
-    let request = {};
-    request.action = "registro";
-    request.data = cliente;
+    // Prepara la petición con la acción y los datos que ha escrito el cliente en el formulario
+    let request = {
+        action: "registro",
+        data: {
+            nombre: document.getElementById("nombre").value,
+            apellidos: document.getElementById("apellidos").value,
+            dni: document.getElementById("dni").value,
+            telefono: document.getElementById("telefono").value,
+            direccion: document.getElementById("direccion").value,
+            email: document.getElementById("email").value,
+            password: document.getElementById("password").value,
+        },
+    };
 
     /* Envía la petición por POST sin recargar la página. JSON.stringify() convierte
        el objeto en texto, que es lo que viaja entre el navegador y el servidor */

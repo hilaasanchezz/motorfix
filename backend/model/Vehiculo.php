@@ -186,6 +186,25 @@ class Vehiculo {
     }
 
     /**
+     * Devuelve los vehículos de un cliente ordenados por matrícula.
+     *
+     * @param int $clienteId Id del cliente
+     * @return array Lista de vehículos del cliente, vacía si no tiene ninguno o falla la consulta
+     */
+    public static function listarPorCliente(int $clienteId): array {
+        try {
+            $sql = "SELECT id, cliente_id, matricula, marca, modelo, anio, color, kilometros, combustible
+                    FROM vehiculos WHERE cliente_id = :cliente_id ORDER BY matricula";
+
+            $stmt = Conection::getInstance()->getPDO()->prepare($sql);
+            $stmt->execute([':cliente_id' => $clienteId]);
+            return $stmt->fetchAll();
+        } catch (PDOException $e) {
+            return [];
+        }
+    }
+
+    /**
      * Actualiza todos los datos del vehículo con el id actual.
      *
      * @return bool true si el vehículo existe y se ha actualizado, false si el combustible

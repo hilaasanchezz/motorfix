@@ -172,6 +172,28 @@ class Cliente {
     }
 
     /**
+     * Busca la ficha de cliente que pertenece a un usuario.
+     *
+     * Se usa en los servicios web para saber qué cliente es el usuario que ha iniciado sesión.
+     *
+     * @param int $usuarioId Id del usuario (tabla usuarios)
+     * @return array|false Los datos del cliente, o false si el usuario no tiene ficha de cliente
+     *                     o falla la consulta
+     */
+    public static function obtenerPorUsuario(int $usuarioId): array|false {
+        try {
+            $sql = "SELECT id, usuario_id, dni, nombre, apellidos, telefono, email, direccion, fecha_alta
+                    FROM clientes WHERE usuario_id = :usuario_id";
+
+            $stmt = Conection::getInstance()->getPDO()->prepare($sql);
+            $stmt->execute([':usuario_id' => $usuarioId]);
+            return $stmt->fetch();
+        } catch (PDOException $e) {
+            return false;
+        }
+    }
+
+    /**
      * Actualiza todos los datos del cliente con el id actual.
      *
      * @return bool true si el cliente existe y se ha actualizado, false si no existe
