@@ -54,6 +54,14 @@ function cerrarSesion() {
     });
 }
 
+/**
+ * Carga los vehículos del cliente en la tabla "Mis vehículos".
+ *
+ * Se llama al abrir cliente.html con onLoad="cargarVehiculos()" en el body, y otra vez
+ * después de añadir, editar o eliminar un vehículo. Pide a vehiculo_sw.php la acción
+ * "listar", guarda los vehículos en la variable vehiculos y crea una fila por cada uno
+ * con sus botones "Editar" y "Eliminar". Si falla, muestra el mensaje en rojo.
+ */
 function cargarVehiculos() {
     /* Prepara la petición para listar los vehículos con el token guardado en
        localStorage. El servidor solo devuelve los del cliente que ha iniciado sesión */
@@ -128,6 +136,15 @@ function cargarVehiculos() {
     });
 }
 
+/**
+ * Prepara el formulario para editar un vehículo.
+ *
+ * Se llama desde el botón "Editar" de cada fila con onClick="editarVehiculo(id)".
+ * Rellena el formulario con los datos del vehículo, guarda su id en vehiculoEditando
+ * y cambia el texto del botón a "Guardar cambios". No envía nada al servidor.
+ *
+ * @param {number} id Id del vehículo que se va a editar
+ */
 function editarVehiculo(id) {
     // Busca en la lista cargada el vehículo con ese id
     let vehiculo = null;
@@ -152,6 +169,14 @@ function editarVehiculo(id) {
     document.getElementById("anadir-vehiculo").value = "Guardar cambios";
 }
 
+/**
+ * Guarda el vehículo del formulario: lo añade si es nuevo o lo actualiza si se está editando.
+ *
+ * Se llama desde el botón del formulario con onClick="guardarVehiculo()". Envía a
+ * vehiculo_sw.php la acción "insertar" o "actualizar" según vehiculoEditando y muestra
+ * el mensaje del servidor en verde o en rojo. Si va bien, vacía el formulario, lo deja
+ * en modo añadir y vuelve a cargar la tabla.
+ */
 function guardarVehiculo() {
     // Elige la acción: "insertar" si se está añadiendo y "actualizar" si se está editando
     let accion;
@@ -211,6 +236,16 @@ function guardarVehiculo() {
     });
 }
 
+/**
+ * Elimina un vehículo del cliente después de pedir confirmación.
+ *
+ * Se llama desde el botón "Eliminar" de cada fila con onClick="eliminarVehiculo(id)".
+ * Si el usuario acepta, envía a vehiculo_sw.php la acción "eliminar" y muestra el mensaje
+ * del servidor en verde o en rojo. Si va bien, vuelve a cargar la tabla y, si se estaba
+ * editando ese vehículo, deja el formulario en modo añadir.
+ *
+ * @param {number} id Id del vehículo que se va a eliminar
+ */
 function eliminarVehiculo(id) {
     // Pide confirmación antes de borrar. Si el usuario cancela, no hace nada
     if (!confirm("¿Seguro que quieres eliminar este vehículo? También se borrarán sus citas.")) {

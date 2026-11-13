@@ -185,7 +185,12 @@ class Vehiculo {
         }
     }
 
-    // Devuelve los vehículos del cliente indicado ordenados por matrícula
+    /**
+     * Devuelve los vehículos de un cliente ordenados por matrícula.
+     *
+     * @param int $clienteId Id del cliente
+     * @return array Lista de vehículos del cliente, vacía si no tiene ninguno o falla la consulta
+     */
     public static function listarPorCliente(int $clienteId): array {
         try {
             $sql = "SELECT id, cliente_id, matricula, marca, modelo, anio, color, kilometros, combustible

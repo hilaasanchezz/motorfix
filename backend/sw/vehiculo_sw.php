@@ -1,6 +1,33 @@
 <?php
 
-// Servicio web de los vehículos del cliente que ha iniciado sesión
+/**
+ * Servicio web de los vehículos del cliente que ha iniciado sesión.
+ *
+ * Recibe por POST un JSON con la acción, el token (auth_key) y sus datos, y devuelve
+ * siempre un JSON con la estructura {success, msg, data}. Solo pueden usarlo los
+ * usuarios con rol cliente, y cada cliente solo ve y modifica sus propios vehículos.
+ *
+ * Acciones:
+ * - listar: devuelve en data los vehículos del cliente.
+ * - insertar: añade un vehículo al cliente.
+ *   data: matricula, marca, modelo, anio, color, kilometros, combustible
+ *   Devuelve en data el id del vehículo nuevo.
+ * - actualizar: cambia los datos de un vehículo del cliente.
+ *   data: id y los mismos campos que insertar
+ * - eliminar: borra un vehículo del cliente y sus citas. No se puede si alguna
+ *   de sus citas tiene factura.
+ *   data: id
+ *
+ * Ejemplos de petición:
+ * <code>
+ * {"action": "listar", "auth_key": "..."}
+ * {"action": "insertar", "auth_key": "...", "data": {"matricula": "1234ABC", "marca": "Seat", "modelo": "León",
+ *  "anio": "2018", "color": "Blanco", "kilometros": "85000", "combustible": "diesel"}}
+ * {"action": "eliminar", "auth_key": "...", "data": {"id": 1}}
+ * </code>
+ *
+ * @author Hilario Sánchez Pérez
+ */
 
 // Indica que la respuesta es un JSON
 header('Content-Type: application/json; charset=UTF-8');
