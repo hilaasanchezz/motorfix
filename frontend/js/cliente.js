@@ -1,8 +1,8 @@
 /**
  * Controlador de la vista cliente.html (panel del cliente).
  *
- * De momento gestiona el cierre de sesión y el listado, el alta y la edición de
- * vehículos. El borrado de vehículos, las citas y las facturas se añadirán en la semana 4.
+ * De momento gestiona el cierre de sesión y el listado, el alta, la edición y el
+ * borrado de vehículos. Las citas y las facturas se añadirán más adelante.
  *
  * @author Hilario Sánchez Pérez
  */
@@ -98,8 +98,9 @@ function cargarVehiculos() {
                 fila.appendChild(celda);
             });
 
-            /* Añade la última celda con los botones de editar y eliminar. "Editar" lleva
-               el id del vehículo en su onClick; "Eliminar" todavía no hace nada */
+            /* Crea la última celda con los botones "Editar" y "Eliminar". Cada botón llama
+               a su función con el id de este vehículo, por ejemplo editarVehiculo(1),
+               para que sepa qué vehículo tiene que editar o eliminar */
             const acciones = document.createElement("td");
 
             const editar = document.createElement("input");
@@ -111,6 +112,7 @@ function cargarVehiculos() {
             const eliminar = document.createElement("input");
             eliminar.type = "button";
             eliminar.value = "Eliminar";
+            eliminar.setAttribute("onClick", "eliminarVehiculo(" + vehiculo.id + ")");
             acciones.appendChild(eliminar);
 
             fila.appendChild(acciones);
@@ -198,6 +200,62 @@ function guardarVehiculo() {
             vehiculoEditando = null;
             document.getElementById("anadir-vehiculo").value = "Añadir vehículo";
             cargarVehiculos();
+        }
+    })
+    // Si la petición falla (por ejemplo, el servidor no responde) muestra un error
+    .catch((error) => {
+        console.error("Error:", error);
+        const mensaje = document.getElementById("mensaje-vehiculo");
+        mensaje.textContent = "No se ha podido conectar con el servidor";
+        mensaje.className = "error";
+    });
+}
+
+function eliminarVehiculo(id) {
+    // Pide confirmación antes de borrar. Si el usuario cancela, no hace nada
+    if (!confirm("¿Seguro que quieres eliminar este vehículo? También se borrarán sus citas.")) {
+        return;
+    }
+
+    // Prepara la petición con el token y el id del vehículo que se va a eliminar
+    let request = {
+        action: "eliminar",
+        auth_key: localStorage.getItem("auth_key"),
+        data: { id: id },
+    };
+
+    // Envía la petición por POST a vehiculo_sw.php
+    fetch(urlVehiculo, {
+        method: "POST",
+        body: JSON.stringify(request),
+        headers: {
+            "Content-Type": "application/json",
+        },
+    })
+    // Convierte el texto que devuelve el servidor en un objeto de JavaScript
+    .then((res) => res.json())
+    .then((response) => {
+        // Muestra el mensaje del servidor
+        const mensaje = document.getElementById("mensaje-vehiculo");
+        mensaje.textContent = response.msg;
+
+        if (response.success) {
+            // Si ha ido bien pinta el mensaje en verde
+            mensaje.className = "exito";
+
+            /* Si se estaba editando el vehículo eliminado, vacía el formulario
+               y lo deja otra vez en modo añadir */
+            if (vehiculoEditando === id) {
+                document.getElementById("form-vehiculo").reset();
+                vehiculoEditando = null;
+                document.getElementById("anadir-vehiculo").value = "Añadir vehículo";
+            }
+
+            // Vuelve a cargar la tabla para que desaparezca el vehículo eliminado
+            cargarVehiculos();
+        } else {
+            // Si no se ha podido eliminar pinta el mensaje en rojo
+            mensaje.className = "error";
         }
     })
     // Si la petición falla (por ejemplo, el servidor no responde) muestra un error

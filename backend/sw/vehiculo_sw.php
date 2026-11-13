@@ -105,6 +105,27 @@ if ($usuarioAuth["rol"] !== "cliente") {
                 }
                 break;
 
+            case "eliminar":
+                $id = (int) $request["data"]["id"];
+
+                /* Comprueba que el vehículo existe y que es del cliente que ha iniciado sesión,
+                   para que nadie pueda eliminar el vehículo de otro cliente */
+                $vehiculo = new Vehiculo($id);
+                $datosActuales = $vehiculo->obtener();
+
+                if ($datosActuales === false || (int) $datosActuales["cliente_id"] !== (int) $cliente["id"]) {
+                    $success = false;
+                    $msg = "No se ha encontrado el vehículo";
+                } else if ($vehiculo->eliminar()) {
+                    $msg = "Vehículo eliminado correctamente";
+                } else {
+                    /* La BD no deja borrarlo si alguna de sus citas tiene factura;
+                       las citas sin factura se borran con el vehículo */
+                    $success = false;
+                    $msg = "No se ha podido eliminar el vehículo (¿tiene citas con factura?)";
+                }
+                break;
+
             default:
                 $success = false;
                 $msg = "Acción no soportada";
