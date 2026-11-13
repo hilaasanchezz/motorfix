@@ -11,8 +11,7 @@ require_once __DIR__ . '/../model/Cliente.php';
 require_once __DIR__ . '/../model/Vehiculo.php';
 
 // Lee el JSON que envía el fetch() y lo convierte en un array asociativo
-$contenidoJSON = file_get_contents('php://input');
-$request = json_decode($contenidoJSON, true);
+$request = json_decode(file_get_contents('php://input'), true);
 
 $success = true;
 $msg = "";

@@ -23,9 +23,7 @@ const urlVehiculo = "../../backend/sw/vehiculo_sw.php";
 function cerrarSesion() {
     /* Prepara la petición de logout con el token que se guardó en localStorage al
        iniciar sesión. El token va junto a "action", fuera de "data" */
-    let request = {};
-    request.action = "logout";
-    request.auth_key = localStorage.getItem("auth_key");
+    let request = { action: "logout", auth_key: localStorage.getItem("auth_key") };
 
     // Envía la petición por POST para que el servidor borre el token de la BD
     fetch(urlAuth, {
@@ -53,9 +51,7 @@ function cerrarSesion() {
 function cargarVehiculos() {
     /* Prepara la petición para listar los vehículos con el token guardado en
        localStorage. El servidor solo devuelve los del cliente que ha iniciado sesión */
-    let request = {};
-    request.action = "listar";
-    request.auth_key = localStorage.getItem("auth_key");
+    let request = { action: "listar", auth_key: localStorage.getItem("auth_key") };
 
     // Envía la petición por POST a vehiculo_sw.php
     fetch(urlVehiculo, {
@@ -123,17 +119,18 @@ function cargarVehiculos() {
 function anadirVehiculo() {
     /* Prepara la petición con los datos del formulario. El token va junto a "action"
        y los datos del vehículo dentro de "data" */
-    let request = {};
-    request.action = "insertar";
-    request.auth_key = localStorage.getItem("auth_key");
-    request.data = {
-        matricula: document.getElementById("matricula").value,
-        marca: document.getElementById("marca").value,
-        modelo: document.getElementById("modelo").value,
-        anio: document.getElementById("anio").value,
-        color: document.getElementById("color").value,
-        kilometros: document.getElementById("kilometros").value,
-        combustible: document.getElementById("combustible").value,
+    let request = {
+        action: "insertar",
+        auth_key: localStorage.getItem("auth_key"),
+        data: {
+            matricula: document.getElementById("matricula").value,
+            marca: document.getElementById("marca").value,
+            modelo: document.getElementById("modelo").value,
+            anio: document.getElementById("anio").value,
+            color: document.getElementById("color").value,
+            kilometros: document.getElementById("kilometros").value,
+            combustible: document.getElementById("combustible").value,
+        },
     };
 
     // Envía la petición por POST a vehiculo_sw.php
