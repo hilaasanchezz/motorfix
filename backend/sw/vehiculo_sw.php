@@ -65,6 +65,46 @@ if ($usuarioAuth["rol"] !== "cliente") {
                 }
                 break;
 
+            case "actualizar":
+                $datos = $request["data"];
+                $id = (int) $datos["id"];
+
+                /* Comprueba que el vehículo existe y que es del cliente que ha iniciado sesión,
+                   para que nadie pueda editar el vehículo de otro cliente */
+                $vehiculoActual = new Vehiculo($id);
+                $datosActuales = $vehiculoActual->obtener();
+
+                if ($datosActuales === false || (int) $datosActuales["cliente_id"] !== (int) $cliente["id"]) {
+                    $success = false;
+                    $msg = "No se ha encontrado el vehículo";
+                } else {
+                    // Convierte los campos vacíos en null, igual que al añadir
+                    $matricula = $datos["matricula"] === "" ? null : $datos["matricula"];
+                    $marca     = $datos["marca"] === "" ? null : $datos["marca"];
+                    $modelo    = $datos["modelo"] === "" ? null : $datos["modelo"];
+                    $color     = $datos["color"] === "" ? null : $datos["color"];
+
+                    /* El combustible también, por si el vehículo no tenía ninguno guardado
+                       y el desplegable llega sin opción elegida */
+                    $combustible = $datos["combustible"] === "" ? null : $datos["combustible"];
+
+                    // El año y los kilómetros llegan como texto y se pasan a número entero
+                    $anio       = $datos["anio"] === "" ? null : (int) $datos["anio"];
+                    $kilometros = $datos["kilometros"] === "" ? null : (int) $datos["kilometros"];
+
+                    // Crea el vehículo con su id y el id del cliente que ha iniciado sesión
+                    $vehiculo = new Vehiculo($id, $cliente["id"], $matricula, $marca, $modelo, $anio,
+                                             $color, $kilometros, $combustible);
+
+                    if ($vehiculo->actualizar()) {
+                        $msg = "Vehículo actualizado correctamente";
+                    } else {
+                        $success = false;
+                        $msg = "No se ha podido guardar el vehículo (¿matrícula repetida o falta algún dato?)";
+                    }
+                }
+                break;
+
             default:
                 $success = false;
                 $msg = "Acción no soportada";

@@ -1,8 +1,8 @@
 /**
  * Controlador de la vista cliente.html (panel del cliente).
  *
- * De momento gestiona el cierre de sesión y el listado de vehículos. El resto
- * de la gestión de vehículos, las citas y las facturas se añadirán en la semana 4.
+ * De momento gestiona el cierre de sesión y el listado, el alta y la edición de
+ * vehículos. El borrado de vehículos, las citas y las facturas se añadirán en la semana 4.
  *
  * @author Hilario Sánchez Pérez
  */
@@ -12,6 +12,12 @@ const urlAuth = "../../backend/sw/auth_sw.php";
 
 // Dirección del servicio web de los vehículos del cliente
 const urlVehiculo = "../../backend/sw/vehiculo_sw.php";
+
+// Id del vehículo que se está editando, o null si el formulario está en modo añadir
+let vehiculoEditando = null;
+
+// Vehículos del cliente que se han cargado en la tabla
+let vehiculos = [];
 
 /**
  * Cierra la sesión del cliente.
@@ -73,6 +79,9 @@ function cargarVehiculos() {
             return;
         }
 
+        // Guarda los vehículos para poder rellenar el formulario al pulsar "Editar"
+        vehiculos = response.data;
+
         // Vacía la tabla antes de rellenarla para que no se repitan las filas
         const lista = document.getElementById("lista-vehiculos");
         lista.textContent = "";
@@ -89,13 +98,14 @@ function cargarVehiculos() {
                 fila.appendChild(celda);
             });
 
-            /* Añade la última celda con los botones de editar y eliminar. De momento
-               no hacen nada: sus funciones llegarán en los siguientes commits */
+            /* Añade la última celda con los botones de editar y eliminar. "Editar" lleva
+               el id del vehículo en su onClick; "Eliminar" todavía no hace nada */
             const acciones = document.createElement("td");
 
             const editar = document.createElement("input");
             editar.type = "button";
             editar.value = "Editar";
+            editar.setAttribute("onClick", "editarVehiculo(" + vehiculo.id + ")");
             acciones.appendChild(editar);
 
             const eliminar = document.createElement("input");
@@ -116,13 +126,45 @@ function cargarVehiculos() {
     });
 }
 
-function anadirVehiculo() {
-    /* Prepara la petición con los datos del formulario. El token va junto a "action"
-       y los datos del vehículo dentro de "data" */
+function editarVehiculo(id) {
+    // Busca en la lista cargada el vehículo con ese id
+    let vehiculo = null;
+    for (let i = 0; i < vehiculos.length; i++) {
+        if (vehiculos[i].id === id) {
+            vehiculo = vehiculos[i];
+        }
+    }
+
+    // Rellena el formulario con sus datos para poder cambiarlos
+    document.getElementById("matricula").value = vehiculo.matricula;
+    document.getElementById("marca").value = vehiculo.marca;
+    document.getElementById("modelo").value = vehiculo.modelo;
+    document.getElementById("anio").value = vehiculo.anio;
+    document.getElementById("color").value = vehiculo.color;
+    document.getElementById("kilometros").value = vehiculo.kilometros;
+    document.getElementById("combustible").value = vehiculo.combustible;
+
+    /* Guarda el id para que guardarVehiculo() sepa que tiene que actualizar
+       y cambia el texto del botón para que se vea que se está editando */
+    vehiculoEditando = id;
+    document.getElementById("anadir-vehiculo").value = "Guardar cambios";
+}
+
+function guardarVehiculo() {
+    // Elige la acción: "insertar" si se está añadiendo y "actualizar" si se está editando
+    let accion;
+    if (vehiculoEditando === null) {
+        accion = "insertar";
+    } else {
+        accion = "actualizar";
+    }
+
+    // Prepara la petición con los datos del formulario y el id del vehículo que se edita
     let request = {
-        action: "insertar",
+        action: accion,
         auth_key: localStorage.getItem("auth_key"),
         data: {
+            id: vehiculoEditando,
             matricula: document.getElementById("matricula").value,
             marca: document.getElementById("marca").value,
             modelo: document.getElementById("modelo").value,
@@ -150,9 +192,11 @@ function anadirVehiculo() {
         mensaje.className = response.success ? "exito" : "error";
 
         if (response.success) {
-            /* Vacía el formulario para poder añadir otro vehículo y vuelve a cargar
-               la tabla para que aparezca el nuevo */
+            /* Vacía el formulario, lo deja otra vez en modo añadir y vuelve a cargar
+               la tabla para que se vean los cambios */
             document.getElementById("form-vehiculo").reset();
+            vehiculoEditando = null;
+            document.getElementById("anadir-vehiculo").value = "Añadir vehículo";
             cargarVehiculos();
         }
     })
