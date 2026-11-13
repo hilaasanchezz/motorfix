@@ -1,8 +1,9 @@
 /**
  * Controlador de la vista cliente.html (panel del cliente).
  *
- * De momento gestiona el cierre de sesión y el listado, el alta, la edición y el
- * borrado de vehículos. Las citas y las facturas se añadirán más adelante.
+ * De momento gestiona el cierre de sesión, el listado, el alta, la edición y el
+ * borrado de vehículos y el listado de citas. Pedir cita y las facturas se añadirán
+ * más adelante.
  *
  * @author Hilario Sánchez Pérez
  */
@@ -12,6 +13,9 @@ const urlAuth = "../../backend/sw/auth_sw.php";
 
 // Dirección del servicio web de los vehículos del cliente
 const urlVehiculo = "../../backend/sw/vehiculo_sw.php";
+
+// Dirección del servicio web de las citas del cliente
+const urlCita = "../../backend/sw/cita_sw.php";
 
 // Id del vehículo que se está editando, o null si el formulario está en modo añadir
 let vehiculoEditando = null;
@@ -297,6 +301,58 @@ function eliminarVehiculo(id) {
     .catch((error) => {
         console.error("Error:", error);
         const mensaje = document.getElementById("mensaje-vehiculo");
+        mensaje.textContent = "No se ha podido conectar con el servidor";
+        mensaje.className = "error";
+    });
+}
+
+function cargarCitas() {
+    /* Prepara la petición para listar las citas con el token guardado en
+       localStorage. El servidor solo devuelve las de los vehículos del cliente */
+    let request = { action: "listar", auth_key: localStorage.getItem("auth_key") };
+
+    // Envía la petición por POST a cita_sw.php
+    fetch(urlCita, {
+        method: "POST",
+        body: JSON.stringify(request),
+        headers: {
+            "Content-Type": "application/json",
+        },
+    })
+    // Convierte el texto que devuelve el servidor en un objeto de JavaScript
+    .then((res) => res.json())
+    .then((response) => {
+        if (!response.success) {
+            // Si el servidor no devuelve las citas muestra su mensaje en rojo
+            const mensaje = document.getElementById("mensaje-cita");
+            mensaje.textContent = response.msg;
+            mensaje.className = "error";
+            return;
+        }
+
+        // Vacía la tabla antes de rellenarla para que no se repitan las filas
+        const lista = document.getElementById("lista-citas");
+        lista.textContent = "";
+
+        // Crea una fila por cada cita con la fecha, la matrícula, el motivo y el estado
+        for (let i = 0; i < response.data.length; i++) {
+            const cita = response.data[i];
+            const fila = document.createElement("tr");
+
+            const datos = [cita.fecha_cita, cita.matricula, cita.motivo, cita.estado];
+            for (let j = 0; j < datos.length; j++) {
+                const celda = document.createElement("td");
+                celda.textContent = datos[j];
+                fila.appendChild(celda);
+            }
+
+            lista.appendChild(fila);
+        }
+    })
+    // Si la petición falla (por ejemplo, el servidor no responde) muestra un error
+    .catch((error) => {
+        console.error("Error:", error);
+        const mensaje = document.getElementById("mensaje-cita");
         mensaje.textContent = "No se ha podido conectar con el servidor";
         mensaje.className = "error";
     });
