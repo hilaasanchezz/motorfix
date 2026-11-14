@@ -61,10 +61,11 @@ function cerrarSesion() {
 /**
  * Carga los vehículos del cliente en la tabla "Mis vehículos".
  *
- * Se llama al abrir cliente.html con onLoad="cargarVehiculos()" en el body, y otra vez
- * después de añadir, editar o eliminar un vehículo. Pide a vehiculo_sw.php la acción
- * "listar", guarda los vehículos en la variable vehiculos y crea una fila por cada uno
- * con sus botones "Editar" y "Eliminar". Si falla, muestra el mensaje en rojo.
+ * Se llama al abrir cliente.html con onLoad="cargarVehiculos(); cargarCitas()" en el body,
+ * y otra vez después de añadir, editar o eliminar un vehículo. Pide a vehiculo_sw.php la
+ * acción "listar", guarda los vehículos en la variable vehiculos, rellena el desplegable
+ * de "Pedir cita" y crea una fila por cada uno con sus botones "Editar" y "Eliminar".
+ * Si falla, muestra el mensaje en rojo.
  */
 function cargarVehiculos() {
     /* Prepara la petición para listar los vehículos con el token guardado en
@@ -309,6 +310,13 @@ function eliminarVehiculo(id) {
     });
 }
 
+/**
+ * Rellena el desplegable de vehículos del formulario "Pedir cita".
+ *
+ * Se llama desde cargarVehiculos(), así se actualiza solo cada vez que se añade, edita
+ * o elimina un vehículo. Deja una primera opción "--seleccionar--" y una opción por cada
+ * vehículo, con su id como valor y la matrícula, la marca y el modelo como texto.
+ */
 function rellenarVehiculosCita() {
     // Vacía el desplegable antes de rellenarlo para que no se repitan las opciones
     const select = document.getElementById("vehiculo-cita");
@@ -331,6 +339,14 @@ function rellenarVehiculosCita() {
     }
 }
 
+/**
+ * Carga las citas del cliente en la tabla "Mis citas".
+ *
+ * Se llama al abrir cliente.html con onLoad="cargarVehiculos(); cargarCitas()" en el body
+ * y otra vez después de pedir una cita. Pide a cita_sw.php la acción "listar" y crea una
+ * fila por cita con la fecha, la matrícula, el motivo y el estado. Si falla, muestra el
+ * mensaje en rojo.
+ */
 function cargarCitas() {
     /* Prepara la petición para listar las citas con el token guardado en
        localStorage. El servidor solo devuelve las de los vehículos del cliente */
@@ -383,6 +399,13 @@ function cargarCitas() {
     });
 }
 
+/**
+ * Pide una cita con el vehículo, la fecha y el motivo del formulario.
+ *
+ * Se llama desde el botón "Pedir cita" con onClick="pedirCita()". Envía a cita_sw.php la
+ * acción "insertar" y muestra el mensaje del servidor en verde o en rojo. Si va bien,
+ * vacía el formulario y vuelve a cargar la tabla de citas.
+ */
 function pedirCita() {
     // Prepara la petición con el vehículo elegido, la fecha y el motivo del formulario
     let request = {

@@ -173,7 +173,16 @@ class Cita {
         }
     }
 
-    // Devuelve las citas de los vehículos del cliente indicado, de la más reciente a la más antigua
+    /**
+     * Devuelve las citas de los vehículos de un cliente, de la más reciente a la más antigua.
+     *
+     * Como las citas solo guardan el vehiculo_id, se unen con la tabla vehiculos (JOIN)
+     * para filtrar por el cliente y sacar también la matrícula de cada vehículo.
+     *
+     * @param int $clienteId Id del cliente
+     * @return array Lista de citas con id, vehiculo_id, matricula, fecha_solicitud, fecha_cita,
+     *               motivo y estado; vacía si no tiene ninguna o falla la consulta
+     */
     public static function listarPorCliente(int $clienteId): array {
         try {
             $sql = "SELECT citas.id, citas.vehiculo_id, vehiculos.matricula, citas.fecha_solicitud,

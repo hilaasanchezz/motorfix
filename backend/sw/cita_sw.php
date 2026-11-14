@@ -1,6 +1,29 @@
 <?php
 
-// Servicio web de las citas del cliente que ha iniciado sesión
+/**
+ * Servicio web de las citas del cliente que ha iniciado sesión.
+ *
+ * Recibe por POST un JSON con la acción, el token (auth_key) y sus datos, y devuelve
+ * siempre un JSON con la estructura {success, msg, data}. Solo pueden usarlo los
+ * usuarios con rol cliente, y cada cliente solo ve y pide citas para sus propios vehículos.
+ *
+ * Acciones:
+ * - listar: devuelve en data las citas de los vehículos del cliente, de la más reciente
+ *   a la más antigua, con la matrícula de cada vehículo.
+ * - insertar: pide una cita nueva, en estado pendiente y sin mecánico. El vehículo tiene
+ *   que ser del cliente y no deja fechas pasadas.
+ *   data: vehiculo_id, fecha_cita (posterior a ahora), motivo
+ *   Devuelve solo success y msg.
+ *
+ * Ejemplos de petición:
+ * <code>
+ * {"action": "listar", "auth_key": "..."}
+ * {"action": "insertar", "auth_key": "...", "data": {"vehiculo_id": "1", "fecha_cita": "2026-12-15T10:30",
+ *  "motivo": "Cambio de aceite"}}
+ * </code>
+ *
+ * @author Hilario Sánchez Pérez
+ */
 
 // Indica que la respuesta es un JSON
 header('Content-Type: application/json; charset=UTF-8');
