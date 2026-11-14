@@ -174,6 +174,32 @@ class Cita {
     }
 
     /**
+     * Devuelve las citas de los vehículos de un cliente, de la más reciente a la más antigua.
+     *
+     * Como las citas solo guardan el vehiculo_id, se unen con la tabla vehiculos (JOIN)
+     * para filtrar por el cliente y sacar también la matrícula de cada vehículo.
+     *
+     * @param int $clienteId Id del cliente
+     * @return array Lista de citas con id, vehiculo_id, matricula, fecha_solicitud, fecha_cita,
+     *               motivo y estado; vacía si no tiene ninguna o falla la consulta
+     */
+    public static function listarPorCliente(int $clienteId): array {
+        try {
+            $sql = "SELECT citas.id, citas.vehiculo_id, vehiculos.matricula, citas.fecha_solicitud,
+                           citas.fecha_cita, citas.motivo, citas.estado
+                    FROM citas JOIN vehiculos ON citas.vehiculo_id = vehiculos.id
+                    WHERE vehiculos.cliente_id = :cliente_id
+                    ORDER BY citas.fecha_cita DESC";
+
+            $stmt = Conection::getInstance()->getPDO()->prepare($sql);
+            $stmt->execute([':cliente_id' => $clienteId]);
+            return $stmt->fetchAll();
+        } catch (PDOException $e) {
+            return [];
+        }
+    }
+
+    /**
      * Actualiza todos los datos de la cita con el id actual.
      *
      * @return bool true si la cita existe y se ha actualizado, false si el estado

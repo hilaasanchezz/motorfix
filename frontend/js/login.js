@@ -68,7 +68,7 @@ function login() {
 
 /**
  * Escribe el texto en el párrafo #mensaje y le pone la clase "exito" o "error"
- * para que login.css lo pinte en verde o en rojo.
+ * para que login.css lo ponga en verde o en rojo.
  *
  * @param {string}  texto Mensaje que se muestra
  * @param {boolean} exito true para verde (éxito), false para rojo (error)
