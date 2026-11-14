@@ -198,6 +198,25 @@ class Factura {
         }
     }
 
+    // Devuelve las facturas de las citas de los vehículos del cliente indicado, de la más reciente a la más antigua
+    public static function listarPorCliente(int $clienteId): array {
+        try {
+            $sql = "SELECT facturas.id, facturas.numero, facturas.fecha, facturas.subtotal,
+                           facturas.iva_importe, facturas.total, facturas.estado
+                    FROM facturas
+                    JOIN citas ON facturas.cita_id = citas.id
+                    JOIN vehiculos ON citas.vehiculo_id = vehiculos.id
+                    WHERE vehiculos.cliente_id = :cliente_id
+                    ORDER BY facturas.fecha DESC";
+
+            $stmt = Conection::getInstance()->getPDO()->prepare($sql);
+            $stmt->execute([':cliente_id' => $clienteId]);
+            return $stmt->fetchAll();
+        } catch (PDOException $e) {
+            return [];
+        }
+    }
+
     /**
      * Actualiza todos los datos de la factura con el id actual.
      *
