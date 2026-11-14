@@ -11,7 +11,7 @@
  * - listar: devuelve en data las citas de los vehículos del cliente, de la más reciente
  *   a la más antigua, con la matrícula de cada vehículo.
  * - insertar: pide una cita nueva, en estado pendiente y sin mecánico. El vehículo tiene
- *   que ser del cliente y no deja fechas pasadas.
+ *   que ser del cliente, y la fecha tiene que ser válida y posterior a ahora.
  *   data: vehiculo_id, fecha_cita (posterior a ahora), motivo
  *   Devuelve solo success y msg.
  *

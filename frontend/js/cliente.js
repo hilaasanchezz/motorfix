@@ -249,8 +249,9 @@ function guardarVehiculo() {
  *
  * Se llama desde el botón "Eliminar" de cada fila con onClick="eliminarVehiculo(id)".
  * Si el usuario acepta, envía a vehiculo_sw.php la acción "eliminar" y muestra el mensaje
- * del servidor en verde o en rojo. Si va bien, vuelve a cargar la tabla y, si se estaba
- * editando ese vehículo, deja el formulario en modo añadir.
+ * del servidor en verde o en rojo. Si va bien, vuelve a cargar las tablas de vehículos y de
+ * citas (las citas del vehículo se borran con él) y, si se estaba editando ese vehículo,
+ * deja el formulario en modo añadir.
  *
  * @param {number} id Id del vehículo que se va a eliminar
  */
