@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="../css/cliente.css">
     <script src="../js/cliente.js"></script>
 </head>
-<body onLoad="cargarVehiculos()">
+<body onLoad="cargarVehiculos(); cargarCitas()">
     <!-- Cabecera con el logo y el botón para cerrar sesión -->
     <header>
         <h1>Motor<span>Fix</span></h1>
@@ -129,7 +129,7 @@
                 <!-- Aquí se mostrarán los mensajes de error o de éxito -->
                 <p id="mensaje-cita"></p>
 
-                <input type="button" value="Pedir cita" id="pedir-cita">
+                <input type="button" value="Pedir cita" id="pedir-cita" onClick="pedirCita()">
             </form>
         </section>
 

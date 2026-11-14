@@ -173,6 +173,23 @@ class Cita {
         }
     }
 
+    // Devuelve las citas de los vehículos del cliente indicado, de la más reciente a la más antigua
+    public static function listarPorCliente(int $clienteId): array {
+        try {
+            $sql = "SELECT citas.id, citas.vehiculo_id, vehiculos.matricula, citas.fecha_solicitud,
+                           citas.fecha_cita, citas.motivo, citas.estado
+                    FROM citas JOIN vehiculos ON citas.vehiculo_id = vehiculos.id
+                    WHERE vehiculos.cliente_id = :cliente_id
+                    ORDER BY citas.fecha_cita DESC";
+
+            $stmt = Conection::getInstance()->getPDO()->prepare($sql);
+            $stmt->execute([':cliente_id' => $clienteId]);
+            return $stmt->fetchAll();
+        } catch (PDOException $e) {
+            return [];
+        }
+    }
+
     /**
      * Actualiza todos los datos de la cita con el id actual.
      *
