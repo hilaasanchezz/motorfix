@@ -2,8 +2,8 @@
  * Controlador de la vista cliente.html (panel del cliente).
  *
  * De momento gestiona el cierre de sesión, el listado, el alta, la edición y el
- * borrado de vehículos y el listado de citas. Pedir cita y las facturas se añadirán
- * más adelante.
+ * borrado de vehículos, el listado de citas y el desplegable de vehículos para pedir
+ * cita. Pedir cita y las facturas se añadirán más adelante.
  *
  * @author Hilario Sánchez Pérez
  */
@@ -93,6 +93,9 @@ function cargarVehiculos() {
 
         // Guarda los vehículos para poder rellenar el formulario al pulsar "Editar"
         vehiculos = response.data;
+
+        // Pone los mismos vehículos en el desplegable del formulario "Pedir cita"
+        rellenarVehiculosCita();
 
         // Vacía la tabla antes de rellenarla para que no se repitan las filas
         const lista = document.getElementById("lista-vehiculos");
@@ -304,6 +307,28 @@ function eliminarVehiculo(id) {
         mensaje.textContent = "No se ha podido conectar con el servidor";
         mensaje.className = "error";
     });
+}
+
+function rellenarVehiculosCita() {
+    // Vacía el desplegable antes de rellenarlo para que no se repitan las opciones
+    const select = document.getElementById("vehiculo-cita");
+    select.textContent = "";
+
+    // Añade una primera opción vacía para que el cliente tenga que elegir un vehículo
+    const primera = document.createElement("option");
+    primera.value = "";
+    primera.textContent = "--seleccionar--";
+    select.appendChild(primera);
+
+    /* Crea una opción por cada vehículo cargado en la tabla. Su value es el id del
+       vehículo, que es lo que se enviará al pedir la cita, y su texto es la matrícula,
+       la marca y el modelo */
+    for (let i = 0; i < vehiculos.length; i++) {
+        const opt = document.createElement("option");
+        opt.value = vehiculos[i].id;
+        opt.textContent = vehiculos[i].matricula + " - " + vehiculos[i].marca + " " + vehiculos[i].modelo;
+        select.appendChild(opt);
+    }
 }
 
 function cargarCitas() {
