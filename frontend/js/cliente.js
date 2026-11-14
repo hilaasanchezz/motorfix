@@ -296,6 +296,9 @@ function eliminarVehiculo(id) {
 
             // Vuelve a cargar la tabla para que desaparezca el vehículo eliminado
             cargarVehiculos();
+
+            // Recarga también las citas, porque las del vehículo se han borrado
+            cargarCitas();
         } else {
             // Si no se ha podido eliminar pone el mensaje en rojo
             mensaje.className = "error";
