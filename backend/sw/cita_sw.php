@@ -80,6 +80,10 @@ if ($usuarioAuth["rol"] !== "cliente") {
                 } else if ($datosVehiculo === false || (int) $datosVehiculo["cliente_id"] !== (int) $cliente["id"]) {
                     $success = false;
                     $msg = "No se ha encontrado el vehículo";
+                } else if ($fechaCita !== null && strtotime($fechaCita) === false) {
+                    // Si el texto de la fecha no es una fecha válida, avisa al cliente
+                    $success = false;
+                    $msg = "La fecha no es válida";
                 } else if ($fechaCita !== null && strtotime($fechaCita) <= time()) {
                     // No deja pedir una cita para una fecha que ya ha pasado
                     $success = false;
