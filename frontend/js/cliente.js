@@ -2,8 +2,8 @@
  * Controlador de la vista cliente.html (panel del cliente).
  *
  * De momento gestiona el cierre de sesión, el listado, el alta, la edición y el
- * borrado de vehículos, el listado de citas y el desplegable de vehículos para pedir
- * cita. Pedir cita y las facturas se añadirán más adelante.
+ * borrado de vehículos, y el listado y la solicitud de citas. Las facturas se añadirán
+ * más adelante.
  *
  * @author Hilario Sánchez Pérez
  */
@@ -282,7 +282,7 @@ function eliminarVehiculo(id) {
         mensaje.textContent = response.msg;
 
         if (response.success) {
-            // Si ha ido bien pinta el mensaje en verde
+            // Si ha ido bien pone el mensaje en verde
             mensaje.className = "exito";
 
             /* Si se estaba editando el vehículo eliminado, vacía el formulario
@@ -296,7 +296,7 @@ function eliminarVehiculo(id) {
             // Vuelve a cargar la tabla para que desaparezca el vehículo eliminado
             cargarVehiculos();
         } else {
-            // Si no se ha podido eliminar pinta el mensaje en rojo
+            // Si no se ha podido eliminar pone el mensaje en rojo
             mensaje.className = "error";
         }
     })
@@ -372,6 +372,52 @@ function cargarCitas() {
             }
 
             lista.appendChild(fila);
+        }
+    })
+    // Si la petición falla (por ejemplo, el servidor no responde) muestra un error
+    .catch((error) => {
+        console.error("Error:", error);
+        const mensaje = document.getElementById("mensaje-cita");
+        mensaje.textContent = "No se ha podido conectar con el servidor";
+        mensaje.className = "error";
+    });
+}
+
+function pedirCita() {
+    // Prepara la petición con el vehículo elegido, la fecha y el motivo del formulario
+    let request = {
+        action: "insertar",
+        auth_key: localStorage.getItem("auth_key"),
+        data: {
+            vehiculo_id: document.getElementById("vehiculo-cita").value,
+            fecha_cita: document.getElementById("fecha-cita").value,
+            motivo: document.getElementById("motivo").value,
+        },
+    };
+
+    // Envía la petición por POST a cita_sw.php
+    fetch(urlCita, {
+        method: "POST",
+        body: JSON.stringify(request),
+        headers: {
+            "Content-Type": "application/json",
+        },
+    })
+    // Convierte el texto que devuelve el servidor en un objeto de JavaScript
+    .then((res) => res.json())
+    .then((response) => {
+        // Muestra el mensaje del servidor
+        const mensaje = document.getElementById("mensaje-cita");
+        mensaje.textContent = response.msg;
+
+        if (response.success) {
+            // Si ha ido bien pone el mensaje en verde, vacía el formulario y recarga las citas
+            mensaje.className = "exito";
+            document.getElementById("form-cita").reset();
+            cargarCitas();
+        } else {
+            // Si no se ha podido pedir la cita pone el mensaje en rojo
+            mensaje.className = "error";
         }
     })
     // Si la petición falla (por ejemplo, el servidor no responde) muestra un error

@@ -9,6 +9,7 @@ header('Content-Type: application/json; charset=UTF-8');
 require_once __DIR__ . '/../auth.inc.php';
 require_once __DIR__ . '/../model/Cliente.php';
 require_once __DIR__ . '/../model/Cita.php';
+require_once __DIR__ . '/../model/Vehiculo.php';
 
 // Lee el JSON que envía el fetch() y lo convierte en un array asociativo
 $request = json_decode(file_get_contents('php://input'), true);
@@ -34,6 +35,43 @@ if ($usuarioAuth["rol"] !== "cliente") {
                 // Devuelve solo las citas de los vehículos del cliente que ha iniciado sesión
                 $data = Cita::listarPorCliente($cliente["id"]);
                 $msg = "Citas obtenidas correctamente";
+                break;
+
+            case "insertar":
+                $datos = $request["data"];
+
+                // Convierte los campos vacíos en null, igual que en vehiculo_sw.php
+                $vehiculoId = $datos["vehiculo_id"] === "" ? null : (int) $datos["vehiculo_id"];
+                $fechaCita  = $datos["fecha_cita"] === "" ? null : $datos["fecha_cita"];
+                $motivo     = $datos["motivo"] === "" ? null : $datos["motivo"];
+
+                /* Comprueba que el vehículo existe y que es del cliente que ha iniciado sesión,
+                   para que nadie pueda pedir una cita para el vehículo de otro cliente */
+                $vehiculo = new Vehiculo($vehiculoId);
+                $datosVehiculo = $vehiculo->obtener();
+
+                if ($vehiculoId === null) {
+                    // Si no se ha elegido ningún vehículo en el desplegable, avisa al cliente
+                    $success = false;
+                    $msg = "Elige un vehículo";
+                } else if ($datosVehiculo === false || (int) $datosVehiculo["cliente_id"] !== (int) $cliente["id"]) {
+                    $success = false;
+                    $msg = "No se ha encontrado el vehículo";
+                } else if ($fechaCita !== null && strtotime($fechaCita) <= time()) {
+                    // No deja pedir una cita para una fecha que ya ha pasado
+                    $success = false;
+                    $msg = "La fecha de la cita tiene que ser posterior a ahora";
+                } else {
+                    // Crea la cita sin mecánico (el taller lo asignará después); el estado es "pendiente" por defecto
+                    $cita = new Cita(null, $vehiculoId, null, $fechaCita, $motivo);
+
+                    if ($cita->insertar() === false) {
+                        $success = false;
+                        $msg = "No se ha podido pedir la cita (¿falta algún dato?)";
+                    } else {
+                        $msg = "Cita solicitada correctamente";
+                    }
+                }
                 break;
 
             default:
