@@ -194,8 +194,10 @@ form input[type="button"]:active {
     transform: scale(0.98);
 }
 
-/* Mensajes de error o de éxito: solo se ven cuando tienen texto */
-form p {
+/* Mensajes de error o de éxito: solo se ven cuando tienen texto.
+   El de facturas va fuera de un formulario, por eso se añade con su id */
+form p,
+#mensaje-factura {
     grid-column: 1 / -1;
     margin: 0;
     padding: 10px;
@@ -203,11 +205,13 @@ form p {
     font-size: 14px;
 }
 
-form p:empty {
+form p:empty,
+#mensaje-factura:empty {
     display: none;
 }
 
-form p.error {
+form p.error,
+#mensaje-factura.error {
     background-color: #fdecea;
     color: #c62828;
 }

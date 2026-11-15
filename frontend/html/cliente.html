@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="../css/cliente.css">
     <script src="../js/cliente.js"></script>
 </head>
-<body onLoad="cargarVehiculos(); cargarCitas()">
+<body onLoad="cargarVehiculos(); cargarCitas(); cargarFacturas()">
     <!-- Cabecera con el logo y el botón para cerrar sesión -->
     <header>
         <h1>Motor<span>Fix</span></h1>
@@ -152,6 +152,9 @@
                 <tbody id="lista-facturas">
                 </tbody>
             </table>
+
+            <!-- Aquí se mostrarán los mensajes de error -->
+            <p id="mensaje-factura"></p>
         </section>
     </main>
 </body>
