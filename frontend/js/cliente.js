@@ -1,9 +1,8 @@
 /**
  * Controlador de la vista cliente.html (panel del cliente).
  *
- * De momento gestiona el cierre de sesión, el listado, el alta, la edición y el
- * borrado de vehículos, y el listado y la solicitud de citas. Las facturas se añadirán
- * más adelante.
+ * Gestiona el cierre de sesión, el listado, el alta, la edición y el borrado de
+ * vehículos, el listado y la solicitud de citas, y la consulta de facturas.
  *
  * @author Hilario Sánchez Pérez
  */
@@ -16,6 +15,9 @@ const urlVehiculo = "../../backend/sw/vehiculo_sw.php";
 
 // Dirección del servicio web de las citas del cliente
 const urlCita = "../../backend/sw/cita_sw.php";
+
+// Dirección del servicio web de las facturas del cliente
+const urlFactura = "../../backend/sw/factura_sw.php";
 
 // Id del vehículo que se está editando, o null si el formulario está en modo añadir
 let vehiculoEditando = null;
@@ -61,8 +63,8 @@ function cerrarSesion() {
 /**
  * Carga los vehículos del cliente en la tabla "Mis vehículos".
  *
- * Se llama al abrir cliente.html con onLoad="cargarVehiculos(); cargarCitas()" en el body,
- * y otra vez después de añadir, editar o eliminar un vehículo. Pide a vehiculo_sw.php la
+ * Se llama al abrir cliente.html con onLoad="cargarVehiculos(); cargarCitas(); cargarFacturas()"
+ * en el body, y otra vez después de añadir, editar o eliminar un vehículo. Pide a vehiculo_sw.php la
  * acción "listar", guarda los vehículos en la variable vehiculos, rellena el desplegable
  * de "Pedir cita" y crea una fila por cada uno con sus botones "Editar" y "Eliminar".
  * Si falla, muestra el mensaje en rojo.
@@ -346,8 +348,8 @@ function rellenarVehiculosCita() {
 /**
  * Carga las citas del cliente en la tabla "Mis citas".
  *
- * Se llama al abrir cliente.html con onLoad="cargarVehiculos(); cargarCitas()" en el body
- * y otra vez después de pedir una cita. Pide a cita_sw.php la acción "listar" y crea una
+ * Se llama al abrir cliente.html con onLoad="cargarVehiculos(); cargarCitas(); cargarFacturas()"
+ * en el body y otra vez después de pedir una cita. Pide a cita_sw.php la acción "listar" y crea una
  * fila por cita con la fecha, la matrícula, el motivo y el estado. Si falla, muestra el
  * mensaje en rojo.
  */
@@ -451,6 +453,66 @@ function pedirCita() {
     .catch((error) => {
         console.error("Error:", error);
         const mensaje = document.getElementById("mensaje-cita");
+        mensaje.textContent = "No se ha podido conectar con el servidor";
+        mensaje.className = "error";
+    });
+}
+
+/**
+ * Carga las facturas del cliente en la tabla "Mis facturas".
+ *
+ * Se llama al abrir cliente.html con onLoad="cargarVehiculos(); cargarCitas(); cargarFacturas()"
+ * en el body. Pide a factura_sw.php la acción "listar" y crea una fila por factura con el
+ * número, la fecha, el subtotal, el IVA, el total y el estado. Si falla, pone el mensaje en rojo.
+ */
+function cargarFacturas() {
+    /* Prepara la petición para listar las facturas con el token guardado en
+       localStorage. El servidor solo devuelve las de las citas del cliente */
+    let request = { action: "listar", auth_key: localStorage.getItem("auth_key") };
+
+    // Envía la petición por POST a factura_sw.php
+    fetch(urlFactura, {
+        method: "POST",
+        body: JSON.stringify(request),
+        headers: {
+            "Content-Type": "application/json",
+        },
+    })
+    // Convierte el texto que devuelve el servidor en un objeto de JavaScript
+    .then((res) => res.json())
+    .then((response) => {
+        if (!response.success) {
+            // Si el servidor no devuelve las facturas pone su mensaje en rojo
+            const mensaje = document.getElementById("mensaje-factura");
+            mensaje.textContent = response.msg;
+            mensaje.className = "error";
+            return;
+        }
+
+        // Vacía la tabla antes de rellenarla para que no se repitan las filas
+        const lista = document.getElementById("lista-facturas");
+        lista.textContent = "";
+
+        // Crea una fila por cada factura con el número, la fecha, el subtotal, el IVA, el total y el estado
+        for (let i = 0; i < response.data.length; i++) {
+            const factura = response.data[i];
+            const fila = document.createElement("tr");
+
+            const datos = [factura.numero, factura.fecha, factura.subtotal, factura.iva_importe,
+                           factura.total, factura.estado];
+            for (let j = 0; j < datos.length; j++) {
+                const celda = document.createElement("td");
+                celda.textContent = datos[j];
+                fila.appendChild(celda);
+            }
+
+            lista.appendChild(fila);
+        }
+    })
+    // Si la petición falla (por ejemplo, el servidor no responde) muestra un error
+    .catch((error) => {
+        console.error("Error:", error);
+        const mensaje = document.getElementById("mensaje-factura");
         mensaje.textContent = "No se ha podido conectar con el servidor";
         mensaje.className = "error";
     });

@@ -199,6 +199,34 @@ class Factura {
     }
 
     /**
+     * Devuelve las facturas de un cliente, de la más reciente a la más antigua.
+     *
+     * Como las facturas solo guardan el cita_id, se unen con la tabla citas para llegar
+     * al vehículo y con la tabla vehiculos para filtrar por el cliente (JOIN).
+     *
+     * @param int $clienteId Id del cliente
+     * @return array Lista de facturas con id, numero, fecha, subtotal, iva_importe, total
+     *               y estado; vacía si no tiene ninguna o falla la consulta
+     */
+    public static function listarPorCliente(int $clienteId): array {
+        try {
+            $sql = "SELECT facturas.id, facturas.numero, facturas.fecha, facturas.subtotal,
+                           facturas.iva_importe, facturas.total, facturas.estado
+                    FROM facturas
+                    JOIN citas ON facturas.cita_id = citas.id
+                    JOIN vehiculos ON citas.vehiculo_id = vehiculos.id
+                    WHERE vehiculos.cliente_id = :cliente_id
+                    ORDER BY facturas.fecha DESC";
+
+            $stmt = Conection::getInstance()->getPDO()->prepare($sql);
+            $stmt->execute([':cliente_id' => $clienteId]);
+            return $stmt->fetchAll();
+        } catch (PDOException $e) {
+            return [];
+        }
+    }
+
+    /**
      * Actualiza todos los datos de la factura con el id actual.
      *
      * @return bool true si la factura existe y se ha actualizado, false si el estado
