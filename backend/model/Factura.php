@@ -198,7 +198,16 @@ class Factura {
         }
     }
 
-    // Devuelve las facturas de las citas de los vehículos del cliente indicado, de la más reciente a la más antigua
+    /**
+     * Devuelve las facturas de un cliente, de la más reciente a la más antigua.
+     *
+     * Como las facturas solo guardan el cita_id, se unen con la tabla citas para llegar
+     * al vehículo y con la tabla vehiculos para filtrar por el cliente (JOIN).
+     *
+     * @param int $clienteId Id del cliente
+     * @return array Lista de facturas con id, numero, fecha, subtotal, iva_importe, total
+     *               y estado; vacía si no tiene ninguna o falla la consulta
+     */
     public static function listarPorCliente(int $clienteId): array {
         try {
             $sql = "SELECT facturas.id, facturas.numero, facturas.fecha, facturas.subtotal,

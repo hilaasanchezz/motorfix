@@ -63,8 +63,8 @@ function cerrarSesion() {
 /**
  * Carga los vehículos del cliente en la tabla "Mis vehículos".
  *
- * Se llama al abrir cliente.html con onLoad="cargarVehiculos(); cargarCitas()" en el body,
- * y otra vez después de añadir, editar o eliminar un vehículo. Pide a vehiculo_sw.php la
+ * Se llama al abrir cliente.html con onLoad="cargarVehiculos(); cargarCitas(); cargarFacturas()"
+ * en el body, y otra vez después de añadir, editar o eliminar un vehículo. Pide a vehiculo_sw.php la
  * acción "listar", guarda los vehículos en la variable vehiculos, rellena el desplegable
  * de "Pedir cita" y crea una fila por cada uno con sus botones "Editar" y "Eliminar".
  * Si falla, muestra el mensaje en rojo.
@@ -348,8 +348,8 @@ function rellenarVehiculosCita() {
 /**
  * Carga las citas del cliente en la tabla "Mis citas".
  *
- * Se llama al abrir cliente.html con onLoad="cargarVehiculos(); cargarCitas()" en el body
- * y otra vez después de pedir una cita. Pide a cita_sw.php la acción "listar" y crea una
+ * Se llama al abrir cliente.html con onLoad="cargarVehiculos(); cargarCitas(); cargarFacturas()"
+ * en el body y otra vez después de pedir una cita. Pide a cita_sw.php la acción "listar" y crea una
  * fila por cita con la fecha, la matrícula, el motivo y el estado. Si falla, muestra el
  * mensaje en rojo.
  */
@@ -458,6 +458,13 @@ function pedirCita() {
     });
 }
 
+/**
+ * Carga las facturas del cliente en la tabla "Mis facturas".
+ *
+ * Se llama al abrir cliente.html con onLoad="cargarVehiculos(); cargarCitas(); cargarFacturas()"
+ * en el body. Pide a factura_sw.php la acción "listar" y crea una fila por factura con el
+ * número, la fecha, el subtotal, el IVA, el total y el estado. Si falla, pone el mensaje en rojo.
+ */
 function cargarFacturas() {
     /* Prepara la petición para listar las facturas con el token guardado en
        localStorage. El servidor solo devuelve las de las citas del cliente */

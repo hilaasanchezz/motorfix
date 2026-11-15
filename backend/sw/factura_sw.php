@@ -1,6 +1,23 @@
 <?php
 
-// Servicio web de las facturas del cliente que ha iniciado sesión (solo para consultarlas)
+/**
+ * Servicio web de las facturas del cliente que ha iniciado sesión (solo para consultarlas).
+ *
+ * Recibe por POST un JSON con la acción y el token (auth_key), y devuelve siempre
+ * un JSON con la estructura {success, msg, data}. Solo pueden usarlo los usuarios
+ * con rol cliente, y cada cliente solo ve las facturas de las citas de sus vehículos.
+ *
+ * Acciones:
+ * - listar: devuelve en data las facturas del cliente, de la más reciente a la más
+ *   antigua, con número, fecha, subtotal, IVA, total y estado.
+ *
+ * Ejemplo de petición:
+ * <code>
+ * {"action": "listar", "auth_key": "..."}
+ * </code>
+ *
+ * @author Hilario Sánchez Pérez
+ */
 
 // Indica que la respuesta es un JSON
 header('Content-Type: application/json; charset=UTF-8');
