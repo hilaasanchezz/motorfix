@@ -1,14 +1,11 @@
 /**
  * Controlador de la vista cliente.html (panel del cliente).
  *
- * Gestiona el cierre de sesión, el listado, el alta, la edición y el borrado de
- * vehículos, el listado y la solicitud de citas, y la consulta de facturas.
+ * Gestiona el listado, el alta, la edición y el borrado de vehículos, el listado
+ * y la solicitud de citas, y la consulta de facturas.
  *
  * @author Hilario Sánchez Pérez
  */
-
-// Dirección del servicio web de autenticación (sube de frontend/html/ a backend/sw/)
-const urlAuth = "../../backend/sw/auth_sw.php";
 
 // Dirección del servicio web de los vehículos del cliente
 const urlVehiculo = "../../backend/sw/vehiculo_sw.php";
@@ -24,41 +21,6 @@ let vehiculoEditando = null;
 
 // Vehículos del cliente que se han cargado en la tabla
 let vehiculos = [];
-
-/**
- * Cierra la sesión del cliente.
- *
- * Se llama desde el botón "Cerrar sesión" de cliente.html con onClick="cerrarSesion()".
- * Pide a auth_sw.php que borre el token de la BD, lo borra también de localStorage
- * y vuelve a login.html.
- */
-function cerrarSesion() {
-    /* Prepara la petición de logout con el token que se guardó en localStorage al
-       iniciar sesión. El token va junto a "action", fuera de "data" */
-    let request = { action: "logout", auth_key: localStorage.getItem("auth_key") };
-
-    // Envía la petición por POST para que el servidor borre el token de la BD
-    fetch(urlAuth, {
-        method: "POST",
-        body: JSON.stringify(request),
-        headers: {
-            "Content-Type": "application/json",
-        },
-    })
-    // Convierte el texto que devuelve el servidor en un objeto de JavaScript
-    .then((res) => res.json())
-    .then((response) => {
-        /* Borra el token del navegador y vuelve al login. Se hace aunque el servidor
-           diga que no había sesión (por ejemplo, si el token ya había caducado) */
-        localStorage.removeItem("auth_key");
-        window.location.href = "login.html";
-    })
-    // Si la petición falla (por ejemplo, el servidor no responde) avisa al usuario
-    .catch((error) => {
-        console.error("Error:", error);
-        alert("No se ha podido conectar con el servidor");
-    });
-}
 
 /**
  * Carga los vehículos del cliente en la tabla "Mis vehículos".
