@@ -1,7 +1,7 @@
 /**
  * Controlador de la vista oficina.html (panel de oficina).
  *
- * Gestiona el listado de los clientes del taller.
+ * Gestiona el listado y el alta de los clientes del taller.
  *
  * @author Hilario Sánchez Pérez
  */
@@ -75,6 +75,62 @@ function cargarClientes() {
 
             fila.appendChild(acciones);
             lista.appendChild(fila);
+        }
+    })
+    // Si la petición falla (por ejemplo, el servidor no responde) muestra un error
+    .catch((error) => {
+        console.error("Error:", error);
+        const mensaje = document.getElementById("mensaje-cliente");
+        mensaje.textContent = "No se ha podido conectar con el servidor";
+        mensaje.className = "error";
+    });
+}
+
+/**
+ * Añade el cliente del formulario.
+ *
+ * Se llama desde el botón "Añadir cliente" con onClick="guardarCliente()". Envía a
+ * cliente_sw.php la acción "insertar" con los datos del formulario y pone el mensaje
+ * del servidor en verde o en rojo. Si va bien, vacía el formulario y vuelve a cargar la tabla.
+ */
+function guardarCliente() {
+    // Prepara la petición con los datos del formulario
+    let request = {
+        action: "insertar",
+        auth_key: localStorage.getItem("auth_key"),
+        data: {
+            dni: document.getElementById("dni").value,
+            nombre: document.getElementById("nombre").value,
+            apellidos: document.getElementById("apellidos").value,
+            telefono: document.getElementById("telefono").value,
+            email: document.getElementById("email").value,
+            direccion: document.getElementById("direccion").value,
+        },
+    };
+
+    // Envía la petición por POST a cliente_sw.php
+    fetch(urlCliente, {
+        method: "POST",
+        body: JSON.stringify(request),
+        headers: {
+            "Content-Type": "application/json",
+        },
+    })
+    // Convierte el texto que devuelve el servidor en un objeto de JavaScript
+    .then((res) => res.json())
+    .then((response) => {
+        // Pone el mensaje del servidor en verde si ha ido bien o en rojo si no
+        const mensaje = document.getElementById("mensaje-cliente");
+        mensaje.textContent = response.msg;
+
+        if (response.success) {
+            mensaje.className = "exito";
+
+            // Vacía el formulario y vuelve a cargar la tabla para que se vea el cliente nuevo
+            document.getElementById("form-cliente").reset();
+            cargarClientes();
+        } else {
+            mensaje.className = "error";
         }
     })
     // Si la petición falla (por ejemplo, el servidor no responde) muestra un error

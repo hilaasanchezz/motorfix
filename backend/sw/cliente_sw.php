@@ -9,10 +9,15 @@
  *
  * Acciones:
  * - listar: devuelve en data todos los clientes, ordenados por apellidos y nombre.
+ * - insertar: añade un cliente sin cuenta de usuario.
+ *   data: dni, nombre, apellidos, telefono, email, direccion
+ *   Devuelve en data el id del cliente nuevo.
  *
- * Ejemplo de petición:
+ * Ejemplos de petición:
  * <code>
  * {"action": "listar", "auth_key": "..."}
+ * {"action": "insertar", "auth_key": "...", "data": {"dni": "12345678Z", "nombre": "Ana",
+ *  "apellidos": "López García", "telefono": "600123123", "email": "", "direccion": ""}}
  * </code>
  *
  * @author Hilario Sánchez Pérez
@@ -42,6 +47,31 @@ if ($usuarioAuth["rol"] !== "oficina") {
             // Devuelve todos los clientes del taller
             $data = Cliente::listar();
             $msg = "Clientes obtenidos correctamente";
+            break;
+
+        case "insertar":
+            $datos = $request["data"];
+
+            /* Convierte los campos vacíos en null: así la BD rechaza el cliente si falta
+               el DNI, el nombre, los apellidos o el teléfono, y deja vacíos el email y la dirección */
+            $dni       = $datos["dni"] === "" ? null : $datos["dni"];
+            $nombre    = $datos["nombre"] === "" ? null : $datos["nombre"];
+            $apellidos = $datos["apellidos"] === "" ? null : $datos["apellidos"];
+            $telefono  = $datos["telefono"] === "" ? null : $datos["telefono"];
+            $email     = $datos["email"] === "" ? null : $datos["email"];
+            $direccion = $datos["direccion"] === "" ? null : $datos["direccion"];
+
+            // Crea el cliente sin usuario vinculado: oficina da de alta clientes sin cuenta
+            $cliente = new Cliente(null, null, $dni, $nombre, $apellidos, $telefono, $email, $direccion);
+            $clienteId = $cliente->insertar();
+
+            if ($clienteId === false) {
+                $success = false;
+                $msg = "No se ha podido añadir el cliente (¿DNI repetido o falta algún dato?)";
+            } else {
+                $msg = "Cliente añadido correctamente";
+                $data = ["id" => $clienteId];
+            }
             break;
 
         default:
