@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MotorFix - Panel de oficina</title>
+    <link rel="stylesheet" href="../css/cliente.css">
+    <script src="../js/oficina.js"></script>
+</head>
+<body>
+    <!-- Cabecera con el logo y el botón para cerrar sesión -->
+    <header>
+        <h1>Motor<span>Fix</span></h1>
+        <input type="button" value="Cerrar sesión" id="cerrar-sesion" onClick="cerrarSesion()">
+    </header>
+
+    <!-- Menú con las secciones del panel de oficina -->
+    <nav>
+        <ul>
+            <li><a href="#clientes">Clientes</a></li>
+            <li><a href="#vehiculos">Vehículos</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <!-- Sección de clientes: listado y formulario para añadir uno nuevo -->
+        <section id="clientes">
+            <h2>Clientes</h2>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>DNI</th>
+                        <th>Nombre</th>
+                        <th>Apellidos</th>
+                        <th>Teléfono</th>
+                        <th>Email</th>
+                        <th>Dirección</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <!-- Aquí se mostrarán todos los clientes, cada uno con su botón de editar y eliminar -->
+                <tbody id="lista-clientes">
+                </tbody>
+            </table>
+
+            <h3>Añadir cliente</h3>
+            <form id="form-cliente">
+                <div>
+                    <label for="dni">DNI: </label>
+                    <input type="text" name="dni" id="dni">
+                </div>
+                <div>
+                    <label for="nombre">Nombre: </label>
+                    <input type="text" name="nombre" id="nombre">
+                </div>
+                <div>
+                    <label for="apellidos">Apellidos: </label>
+                    <input type="text" name="apellidos" id="apellidos">
+                </div>
+                <div>
+                    <label for="telefono">Teléfono: </label>
+                    <input type="text" name="telefono" id="telefono">
+                </div>
+                <div>
+                    <label for="email">Email: </label>
+                    <input type="text" name="email" id="email">
+                </div>
+                <div>
+                    <label for="direccion">Dirección: </label>
+                    <input type="text" name="direccion" id="direccion">
+                </div>
+
+                <!-- Aquí se mostrarán los mensajes de error o de éxito -->
+                <p id="mensaje-cliente"></p>
+
+                <input type="button" value="Añadir cliente" id="anadir-cliente" onClick="guardarCliente()">
+            </form>
+        </section>
+
+        <!-- Sección de vehículos: listado de todos los vehículos y formulario para añadir uno nuevo -->
+        <section id="vehiculos">
+            <h2>Vehículos</h2>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Cliente</th>
+                        <th>Matrícula</th>
+                        <th>Marca</th>
+                        <th>Modelo</th>
+                        <th>Año</th>
+                        <th>Color</th>
+                        <th>Kilómetros</th>
+                        <th>Combustible</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <!-- Aquí se mostrarán todos los vehículos con su cliente, cada uno con su botón de editar y eliminar -->
+                <tbody id="lista-vehiculos">
+                </tbody>
+            </table>
+
+            <h3>Añadir vehículo</h3>
+            <form id="form-vehiculo">
+                <div>
+                    <label for="cliente-vehiculo">Cliente: </label>
+                    <!-- Aquí se mostrarán los clientes para elegir a quién pertenece el vehículo -->
+                    <select name="cliente_id" id="cliente-vehiculo">
+                    </select>
+                </div>
+                <div>
+                    <label for="matricula">Matrícula: </label>
+                    <input type="text" name="matricula" id="matricula">
+                </div>
+                <div>
+                    <label for="marca">Marca: </label>
+                    <input type="text" name="marca" id="marca">
+                </div>
+                <div>
+                    <label for="modelo">Modelo: </label>
+                    <input type="text" name="modelo" id="modelo">
+                </div>
+                <div>
+                    <label for="anio">Año: </label>
+                    <input type="text" name="anio" id="anio">
+                </div>
+                <div>
+                    <label for="color">Color: </label>
+                    <input type="text" name="color" id="color">
+                </div>
+                <div>
+                    <label for="kilometros">Kilómetros: </label>
+                    <input type="text" name="kilometros" id="kilometros">
+                </div>
+                <div>
+                    <label for="combustible">Combustible: </label>
+                    <select name="combustible" id="combustible">
+                        <option value="gasolina">Gasolina</option>
+                        <option value="diesel">Diésel</option>
+                        <option value="hibrido">Híbrido</option>
+                        <option value="electrico">Eléctrico</option>
+                        <option value="glp">GLP</option>
+                    </select>
+                </div>
+
+                <!-- Aquí se mostrarán los mensajes de error o de éxito -->
+                <p id="mensaje-vehiculo"></p>
+
+                <input type="button" value="Añadir vehículo" id="anadir-vehiculo" onClick="guardarVehiculo()">
+            </form>
+        </section>
+    </main>
+</body>
+</html>
