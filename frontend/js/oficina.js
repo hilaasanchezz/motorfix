@@ -1,7 +1,7 @@
 /**
  * Controlador de la vista oficina.html (panel de oficina).
  *
- * Gestiona el listado, el alta y la edición de los clientes del taller.
+ * Gestiona el listado, el alta, la edición y el borrado de los clientes del taller.
  *
  * @author Hilario Sánchez Pérez
  */
@@ -184,6 +184,72 @@ function guardarCliente() {
             document.getElementById("anadir-cliente").value = "Añadir cliente";
             cargarClientes();
         } else {
+            mensaje.className = "error";
+        }
+    })
+    // Si la petición falla (por ejemplo, el servidor no responde) muestra un error
+    .catch((error) => {
+        console.error("Error:", error);
+        const mensaje = document.getElementById("mensaje-cliente");
+        mensaje.textContent = "No se ha podido conectar con el servidor";
+        mensaje.className = "error";
+    });
+}
+
+/**
+ * Elimina un cliente después de pedir confirmación.
+ *
+ * Se llama desde el botón "Eliminar" de cada fila con onClick="eliminarCliente(id)".
+ * Si el usuario acepta, envía a cliente_sw.php la acción "eliminar" y pone el mensaje
+ * del servidor en verde o en rojo. Si va bien, vuelve a cargar la tabla y, si se estaba
+ * editando ese cliente, deja el formulario en modo añadir.
+ *
+ * @param {number} id Id del cliente que se va a eliminar
+ */
+function eliminarCliente(id) {
+    // Pide confirmación antes de borrar. Si el usuario cancela, no hace nada
+    if (!confirm("¿Seguro que quieres eliminar este cliente? También se borrarán sus vehículos y sus citas.")) {
+        return;
+    }
+
+    // Prepara la petición con el token y el id del cliente que se va a eliminar
+    let request = {
+        action: "eliminar",
+        auth_key: localStorage.getItem("auth_key"),
+        data: { id: id },
+    };
+
+    // Envía la petición por POST a cliente_sw.php
+    fetch(urlCliente, {
+        method: "POST",
+        body: JSON.stringify(request),
+        headers: {
+            "Content-Type": "application/json",
+        },
+    })
+    // Convierte el texto que devuelve el servidor en un objeto de JavaScript
+    .then((res) => res.json())
+    .then((response) => {
+        // Pone el mensaje del servidor
+        const mensaje = document.getElementById("mensaje-cliente");
+        mensaje.textContent = response.msg;
+
+        if (response.success) {
+            // Si ha ido bien pone el mensaje en verde
+            mensaje.className = "exito";
+
+            /* Si se estaba editando el cliente eliminado, vacía el formulario
+               y lo deja otra vez en modo añadir */
+            if (clienteEditando === id) {
+                document.getElementById("form-cliente").reset();
+                clienteEditando = null;
+                document.getElementById("anadir-cliente").value = "Añadir cliente";
+            }
+
+            // Vuelve a cargar la tabla para que desaparezca el cliente eliminado
+            cargarClientes();
+        } else {
+            // Si no se ha podido eliminar pone el mensaje en rojo
             mensaje.className = "error";
         }
     })

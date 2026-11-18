@@ -14,6 +14,9 @@
  *   Devuelve en data el id del cliente nuevo.
  * - actualizar: cambia los datos de un cliente. No cambia su cuenta de usuario.
  *   data: id y los mismos campos que insertar
+ * - eliminar: borra un cliente con sus vehículos y sus citas. No se puede si alguna
+ *   de sus citas tiene factura.
+ *   data: id
  *
  * Ejemplos de petición:
  * <code>
@@ -101,6 +104,23 @@ if ($usuarioAuth["rol"] !== "oficina") {
                     $success = false;
                     $msg = "No se ha podido guardar el cliente (¿DNI repetido o falta algún dato?)";
                 }
+            }
+            break;
+
+        case "eliminar":
+            $cliente = new Cliente((int) $request["data"]["id"]);
+
+            // Comprueba que el cliente existe antes de intentar borrarlo
+            if ($cliente->obtener() === false) {
+                $success = false;
+                $msg = "No se ha encontrado el cliente";
+            } else if ($cliente->eliminar()) {
+                $msg = "Cliente eliminado correctamente";
+            } else {
+                /* La BD no deja borrarlo si alguna cita de sus vehículos tiene factura;
+                   los vehículos y las citas sin factura se borran con el cliente */
+                $success = false;
+                $msg = "No se ha podido eliminar el cliente (¿tiene citas con factura?)";
             }
             break;
 
