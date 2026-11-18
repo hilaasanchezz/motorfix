@@ -78,21 +78,25 @@ function cargarVehiculos() {
                 fila.appendChild(celda);
             });
 
-            /* Crea la última celda con los botones "Editar" y "Eliminar". Cada botón llama
-               a su función con el id de este vehículo, por ejemplo editarVehiculo(1),
-               para que sepa qué vehículo tiene que editar o eliminar */
+            /* Crea la última celda con los botones "Editar" y "Eliminar". Cada botón tiene un
+               addEventListener que, al hacer clic, llama a su función con el id de este vehículo,
+               por ejemplo editarVehiculo(1), para que sepa qué vehículo tiene que editar o eliminar */
             const acciones = document.createElement("td");
 
             const editar = document.createElement("input");
             editar.type = "button";
             editar.value = "Editar";
-            editar.setAttribute("onClick", "editarVehiculo(" + vehiculo.id + ")");
+            editar.addEventListener("click", function () {
+                editarVehiculo(vehiculo.id);
+            });
             acciones.appendChild(editar);
 
             const eliminar = document.createElement("input");
             eliminar.type = "button";
             eliminar.value = "Eliminar";
-            eliminar.setAttribute("onClick", "eliminarVehiculo(" + vehiculo.id + ")");
+            eliminar.addEventListener("click", function () {
+                eliminarVehiculo(vehiculo.id);
+            });
             acciones.appendChild(eliminar);
 
             fila.appendChild(acciones);

@@ -1,13 +1,17 @@
 /**
  * Controlador de la vista oficina.html (panel de oficina).
  *
- * Gestiona el listado, el alta, la edición y el borrado de los clientes del taller.
+ * Gestiona el listado, el alta, la edición y el borrado de los clientes del taller,
+ * y el listado de todos los vehículos.
  *
  * @author Hilario Sánchez Pérez
  */
 
 // Dirección del servicio web de los clientes (sube de frontend/html/ a backend/sw/)
 const urlCliente = "../../backend/sw/cliente_sw.php";
+
+// Dirección del servicio web de los vehículos
+const urlVehiculo = "../../backend/sw/vehiculo_sw.php";
 
 // Id del cliente que se está editando, o null si el formulario está en modo añadir
 let clienteEditando = null;
@@ -19,8 +23,9 @@ let clientes = [];
  * Carga todos los clientes en la tabla "Clientes".
  *
  * Se llama al abrir oficina.html con onLoad="cargarClientes()" en el body. Pide a
- * cliente_sw.php la acción "listar", guarda los clientes en la variable clientes y crea
- * una fila por cada uno con sus botones "Editar" y "Eliminar". Si falla, pone el mensaje en rojo.
+ * cliente_sw.php la acción "listar", guarda los clientes en la variable clientes, carga
+ * los vehículos y crea una fila por cada cliente con sus botones "Editar" y "Eliminar".
+ * Si falla, pone el mensaje en rojo.
  */
 function cargarClientes() {
     // Prepara la petición para listar los clientes con el token guardado en localStorage
@@ -48,6 +53,11 @@ function cargarClientes() {
         // Guarda los clientes para poder rellenar el formulario al pulsar "Editar"
         clientes = response.data;
 
+        /* Carga los vehículos después de tener los clientes, porque la tabla de vehículos
+           necesita los clientes para poner el nombre de cada dueño. Así también se actualiza
+           cuando se edita un cliente o se elimina con sus vehículos */
+        cargarVehiculos();
+
         // Vacía la tabla antes de rellenarla para que no se repitan las filas
         const lista = document.getElementById("lista-clientes");
         lista.textContent = "";
@@ -65,21 +75,25 @@ function cargarClientes() {
                 fila.appendChild(celda);
             }
 
-            /* Crea la última celda con los botones "Editar" y "Eliminar". Cada botón llama
-               a su función con el id de este cliente, por ejemplo editarCliente(1),
-               para que sepa qué cliente tiene que editar o eliminar */
+            /* Crea la última celda con los botones "Editar" y "Eliminar". Cada botón tiene un
+               addEventListener que, al hacer clic, llama a su función con el id de este cliente,
+               por ejemplo editarCliente(1), para que sepa qué cliente tiene que editar o eliminar */
             const acciones = document.createElement("td");
 
             const editar = document.createElement("input");
             editar.type = "button";
             editar.value = "Editar";
-            editar.setAttribute("onClick", "editarCliente(" + cliente.id + ")");
+            editar.addEventListener("click", function () {
+                editarCliente(cliente.id);
+            });
             acciones.appendChild(editar);
 
             const eliminar = document.createElement("input");
             eliminar.type = "button";
             eliminar.value = "Eliminar";
-            eliminar.setAttribute("onClick", "eliminarCliente(" + cliente.id + ")");
+            eliminar.addEventListener("click", function () {
+                eliminarCliente(cliente.id);
+            });
             acciones.appendChild(eliminar);
 
             fila.appendChild(acciones);
@@ -257,6 +271,95 @@ function eliminarCliente(id) {
     .catch((error) => {
         console.error("Error:", error);
         const mensaje = document.getElementById("mensaje-cliente");
+        mensaje.textContent = "No se ha podido conectar con el servidor";
+        mensaje.className = "error";
+    });
+}
+
+/**
+ * Carga todos los vehículos en la tabla "Vehículos".
+ *
+ * Se llama desde cargarClientes(), cuando ya están cargados los clientes. Pide a
+ * vehiculo_sw.php la acción "listar" y crea una fila por cada vehículo con el nombre
+ * de su cliente, sus datos y sus botones "Editar" y "Eliminar". Si falla, pone el mensaje en rojo.
+ */
+function cargarVehiculos() {
+    // Prepara la petición para listar los vehículos con el token guardado en localStorage
+    let request = { action: "listar", auth_key: localStorage.getItem("auth_key") };
+
+    // Envía la petición por POST a vehiculo_sw.php
+    fetch(urlVehiculo, {
+        method: "POST",
+        body: JSON.stringify(request),
+        headers: {
+            "Content-Type": "application/json",
+        },
+    })
+    // Convierte el texto que devuelve el servidor en un objeto de JavaScript
+    .then((res) => res.json())
+    .then((response) => {
+        if (!response.success) {
+            // Si el servidor no devuelve los vehículos pone su mensaje en rojo
+            const mensaje = document.getElementById("mensaje-vehiculo");
+            mensaje.textContent = response.msg;
+            mensaje.className = "error";
+            return;
+        }
+
+        // Vacía la tabla antes de rellenarla para que no se repitan las filas
+        const lista = document.getElementById("lista-vehiculos");
+        lista.textContent = "";
+
+        // Crea una fila por cada vehículo con sus datos en el mismo orden que la cabecera
+        for (let i = 0; i < response.data.length; i++) {
+            const vehiculo = response.data[i];
+            const fila = document.createElement("tr");
+
+            // Busca en los clientes cargados el dueño del vehículo para poner su nombre
+            let nombreCliente = "";
+            for (let j = 0; j < clientes.length; j++) {
+                if (clientes[j].id === vehiculo.cliente_id) {
+                    nombreCliente = clientes[j].nombre + " " + clientes[j].apellidos;
+                }
+            }
+
+            const datos = [nombreCliente, vehiculo.matricula, vehiculo.marca, vehiculo.modelo,
+                           vehiculo.anio, vehiculo.color, vehiculo.kilometros, vehiculo.combustible];
+            for (let j = 0; j < datos.length; j++) {
+                const celda = document.createElement("td");
+                celda.textContent = datos[j];
+                fila.appendChild(celda);
+            }
+
+            /* Crea la última celda con los botones "Editar" y "Eliminar". Cada botón tiene un
+               addEventListener que, al hacer clic, llama a su función con el id de este vehículo,
+               por ejemplo editarVehiculo(1), para que sepa qué vehículo tiene que editar o eliminar */
+            const acciones = document.createElement("td");
+
+            const editar = document.createElement("input");
+            editar.type = "button";
+            editar.value = "Editar";
+            editar.addEventListener("click", function () {
+                editarVehiculo(vehiculo.id);
+            });
+            acciones.appendChild(editar);
+
+            const eliminar = document.createElement("input");
+            eliminar.type = "button";
+            eliminar.value = "Eliminar";
+            eliminar.addEventListener("click", function () {
+                eliminarVehiculo(vehiculo.id);
+            });
+            acciones.appendChild(eliminar);
+
+            fila.appendChild(acciones);
+            lista.appendChild(fila);
+        }
+    })
+    // Si la petición falla (por ejemplo, el servidor no responde) muestra un error
+    .catch((error) => {
+        console.error("Error:", error);
+        const mensaje = document.getElementById("mensaje-vehiculo");
         mensaje.textContent = "No se ha podido conectar con el servidor";
         mensaje.className = "error";
     });

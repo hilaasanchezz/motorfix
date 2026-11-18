@@ -1,13 +1,17 @@
 <?php
 
 /**
- * Servicio web de los vehículos del cliente que ha iniciado sesión.
+ * Servicio web de los vehículos (panel de cliente y panel de oficina).
  *
  * Recibe por POST un JSON con la acción, el token (auth_key) y sus datos, y devuelve
- * siempre un JSON con la estructura {success, msg, data}. Solo pueden usarlo los
- * usuarios con rol cliente, y cada cliente solo ve y modifica sus propios vehículos.
+ * siempre un JSON con la estructura {success, msg, data}. Pueden usarlo los usuarios
+ * con rol cliente, que solo ven y modifican sus propios vehículos, y los de oficina,
+ * que trabajan con los vehículos de todos los clientes.
  *
- * Acciones:
+ * Acciones del rol oficina:
+ * - listar: devuelve en data todos los vehículos.
+ *
+ * Acciones del rol cliente:
  * - listar: devuelve en data los vehículos del cliente.
  * - insertar: añade un vehículo al cliente.
  *   data: matricula, marca, modelo, anio, color, kilometros, combustible
@@ -44,11 +48,8 @@ $success = true;
 $msg = "";
 $data = [];
 
-// De momento solo pueden entrar los clientes (oficina se añadirá en la semana 5)
-if ($usuarioAuth["rol"] !== "cliente") {
-    $success = false;
-    $msg = "No tienes permisos para acceder a esta sección";
-} else {
+// Cada rol tiene sus acciones: el cliente trabaja con sus vehículos y oficina con todos
+if ($usuarioAuth["rol"] === "cliente") {
     // Busca la ficha de cliente del usuario para saber qué vehículos son suyos
     $cliente = Cliente::obtenerPorUsuario($usuarioAuth["id"]);
 
@@ -158,6 +159,22 @@ if ($usuarioAuth["rol"] !== "cliente") {
                 $msg = "Acción no soportada";
         }
     }
+} else if ($usuarioAuth["rol"] === "oficina") {
+    switch ($request["action"] ?? "") {
+        case "listar":
+            // Devuelve todos los vehículos del taller
+            $data = Vehiculo::listar();
+            $msg = "Vehículos obtenidos correctamente";
+            break;
+
+        default:
+            $success = false;
+            $msg = "Acción no soportada";
+    }
+} else {
+    // El resto de roles no pueden entrar
+    $success = false;
+    $msg = "No tienes permisos para acceder a esta sección";
 }
 
 // Devuelve la respuesta con la estructura estándar
