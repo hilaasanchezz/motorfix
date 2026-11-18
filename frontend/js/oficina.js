@@ -2,7 +2,7 @@
  * Controlador de la vista oficina.html (panel de oficina).
  *
  * Gestiona el listado, el alta, la edición y el borrado de los clientes del taller,
- * y el listado de todos los vehículos.
+ * y el listado y el alta de los vehículos de todos los clientes.
  *
  * @author Hilario Sánchez Pérez
  */
@@ -23,9 +23,9 @@ let clientes = [];
  * Carga todos los clientes en la tabla "Clientes".
  *
  * Se llama al abrir oficina.html con onLoad="cargarClientes()" en el body. Pide a
- * cliente_sw.php la acción "listar", guarda los clientes en la variable clientes, carga
- * los vehículos y crea una fila por cada cliente con sus botones "Editar" y "Eliminar".
- * Si falla, pone el mensaje en rojo.
+ * cliente_sw.php la acción "listar", guarda los clientes en la variable clientes, rellena
+ * el desplegable de "Añadir vehículo", carga los vehículos y crea una fila por cada cliente
+ * con sus botones "Editar" y "Eliminar". Si falla, pone el mensaje en rojo.
  */
 function cargarClientes() {
     // Prepara la petición para listar los clientes con el token guardado en localStorage
@@ -52,6 +52,9 @@ function cargarClientes() {
 
         // Guarda los clientes para poder rellenar el formulario al pulsar "Editar"
         clientes = response.data;
+
+        // Pone los mismos clientes en el desplegable del formulario "Añadir vehículo"
+        rellenarClientesVehiculo();
 
         /* Carga los vehículos después de tener los clientes, porque la tabla de vehículos
            necesita los clientes para poner el nombre de cada dueño. Así también se actualiza
@@ -354,6 +357,93 @@ function cargarVehiculos() {
 
             fila.appendChild(acciones);
             lista.appendChild(fila);
+        }
+    })
+    // Si la petición falla (por ejemplo, el servidor no responde) muestra un error
+    .catch((error) => {
+        console.error("Error:", error);
+        const mensaje = document.getElementById("mensaje-vehiculo");
+        mensaje.textContent = "No se ha podido conectar con el servidor";
+        mensaje.className = "error";
+    });
+}
+
+/**
+ * Rellena el desplegable de clientes del formulario "Añadir vehículo".
+ *
+ * Se llama desde cargarClientes(), así se actualiza solo cada vez que se añade, edita
+ * o elimina un cliente. Deja una primera opción "--seleccionar--" y una opción por cada
+ * cliente, con su id como valor y el DNI, el nombre y los apellidos como texto.
+ */
+function rellenarClientesVehiculo() {
+    // Vacía el desplegable antes de rellenarlo para que no se repitan las opciones
+    const select = document.getElementById("cliente-vehiculo");
+    select.textContent = "";
+
+    // Añade una primera opción vacía para que oficina tenga que elegir un cliente
+    const primera = document.createElement("option");
+    primera.value = "";
+    primera.textContent = "--seleccionar--";
+    select.appendChild(primera);
+
+    /* Crea una opción por cada cliente cargado en la tabla. Su value es el id del
+       cliente, que es lo que se enviará al añadir el vehículo, y su texto es el DNI,
+       el nombre y los apellidos */
+    for (let i = 0; i < clientes.length; i++) {
+        const opt = document.createElement("option");
+        opt.value = clientes[i].id;
+        opt.textContent = clientes[i].dni + " - " + clientes[i].nombre + " " + clientes[i].apellidos;
+        select.appendChild(opt);
+    }
+}
+
+/**
+ * Añade el vehículo del formulario al cliente elegido en el desplegable.
+ *
+ * Se llama desde el botón "Añadir vehículo" con onClick="guardarVehiculo()". Envía a
+ * vehiculo_sw.php la acción "insertar" con los datos del formulario y pone el mensaje
+ * del servidor en verde o en rojo. Si va bien, vacía el formulario y vuelve a cargar la tabla.
+ */
+function guardarVehiculo() {
+    // Prepara la petición con el cliente elegido y los datos del formulario
+    let request = {
+        action: "insertar",
+        auth_key: localStorage.getItem("auth_key"),
+        data: {
+            cliente_id: document.getElementById("cliente-vehiculo").value,
+            matricula: document.getElementById("matricula").value,
+            marca: document.getElementById("marca").value,
+            modelo: document.getElementById("modelo").value,
+            anio: document.getElementById("anio").value,
+            color: document.getElementById("color").value,
+            kilometros: document.getElementById("kilometros").value,
+            combustible: document.getElementById("combustible").value,
+        },
+    };
+
+    // Envía la petición por POST a vehiculo_sw.php
+    fetch(urlVehiculo, {
+        method: "POST",
+        body: JSON.stringify(request),
+        headers: {
+            "Content-Type": "application/json",
+        },
+    })
+    // Convierte el texto que devuelve el servidor en un objeto de JavaScript
+    .then((res) => res.json())
+    .then((response) => {
+        // Pone el mensaje del servidor en verde si ha ido bien o en rojo si no
+        const mensaje = document.getElementById("mensaje-vehiculo");
+        mensaje.textContent = response.msg;
+
+        if (response.success) {
+            mensaje.className = "exito";
+
+            // Vacía el formulario y vuelve a cargar la tabla para que se vea el vehículo nuevo
+            document.getElementById("form-vehiculo").reset();
+            cargarVehiculos();
+        } else {
+            mensaje.className = "error";
         }
     })
     // Si la petición falla (por ejemplo, el servidor no responde) muestra un error

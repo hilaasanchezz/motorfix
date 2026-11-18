@@ -10,6 +10,9 @@
  *
  * Acciones del rol oficina:
  * - listar: devuelve en data todos los vehículos.
+ * - insertar: añade un vehículo al cliente elegido.
+ *   data: cliente_id y los mismos campos que en el rol cliente
+ *   Devuelve en data el id del vehículo nuevo.
  *
  * Acciones del rol cliente:
  * - listar: devuelve en data los vehículos del cliente.
@@ -165,6 +168,39 @@ if ($usuarioAuth["rol"] === "cliente") {
             // Devuelve todos los vehículos del taller
             $data = Vehiculo::listar();
             $msg = "Vehículos obtenidos correctamente";
+            break;
+
+        case "insertar":
+            $datos = $request["data"];
+
+            if ($datos["cliente_id"] === "") {
+                // Si no se ha elegido ningún cliente en el desplegable, avisa a oficina
+                $success = false;
+                $msg = "Elige un cliente";
+            } else {
+                // Convierte los campos vacíos en null, igual que en el panel de cliente
+                $matricula = $datos["matricula"] === "" ? null : $datos["matricula"];
+                $marca     = $datos["marca"] === "" ? null : $datos["marca"];
+                $modelo    = $datos["modelo"] === "" ? null : $datos["modelo"];
+                $color     = $datos["color"] === "" ? null : $datos["color"];
+
+                // El año y los kilómetros llegan como texto y se pasan a número entero
+                $anio       = $datos["anio"] === "" ? null : (int) $datos["anio"];
+                $kilometros = $datos["kilometros"] === "" ? null : (int) $datos["kilometros"];
+
+                // Crea el vehículo con el cliente que se ha elegido en el desplegable
+                $vehiculo = new Vehiculo(null, (int) $datos["cliente_id"], $matricula, $marca, $modelo, $anio,
+                                         $color, $kilometros, $datos["combustible"]);
+                $vehiculoId = $vehiculo->insertar();
+
+                if ($vehiculoId === false) {
+                    $success = false;
+                    $msg = "No se ha podido añadir el vehículo (¿matrícula repetida o falta algún dato?)";
+                } else {
+                    $msg = "Vehículo añadido correctamente";
+                    $data = ["id" => $vehiculoId];
+                }
+            }
             break;
 
         default:
