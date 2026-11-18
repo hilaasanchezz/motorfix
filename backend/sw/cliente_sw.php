@@ -12,6 +12,8 @@
  * - insertar: añade un cliente sin cuenta de usuario.
  *   data: dni, nombre, apellidos, telefono, email, direccion
  *   Devuelve en data el id del cliente nuevo.
+ * - actualizar: cambia los datos de un cliente. No cambia su cuenta de usuario.
+ *   data: id y los mismos campos que insertar
  *
  * Ejemplos de petición:
  * <code>
@@ -71,6 +73,34 @@ if ($usuarioAuth["rol"] !== "oficina") {
             } else {
                 $msg = "Cliente añadido correctamente";
                 $data = ["id" => $clienteId];
+            }
+            break;
+
+        case "actualizar":
+            $datos = $request["data"];
+
+            // Carga el cliente de la BD para comprobar que existe y no perder su usuario vinculado
+            $cliente = new Cliente((int) $datos["id"]);
+
+            if ($cliente->obtener() === false) {
+                $success = false;
+                $msg = "No se ha encontrado el cliente";
+            } else {
+                /* Cambia sus datos con el setter mágico (__set). Los campos vacíos se guardan
+                   como null, igual que al añadir. El usuario_id no se toca */
+                $cliente->dni       = $datos["dni"] === "" ? null : $datos["dni"];
+                $cliente->nombre    = $datos["nombre"] === "" ? null : $datos["nombre"];
+                $cliente->apellidos = $datos["apellidos"] === "" ? null : $datos["apellidos"];
+                $cliente->telefono  = $datos["telefono"] === "" ? null : $datos["telefono"];
+                $cliente->email     = $datos["email"] === "" ? null : $datos["email"];
+                $cliente->direccion = $datos["direccion"] === "" ? null : $datos["direccion"];
+
+                if ($cliente->actualizar()) {
+                    $msg = "Cliente actualizado correctamente";
+                } else {
+                    $success = false;
+                    $msg = "No se ha podido guardar el cliente (¿DNI repetido o falta algún dato?)";
+                }
             }
             break;
 
