@@ -13,6 +13,8 @@
  * - insertar: añade un vehículo al cliente elegido.
  *   data: cliente_id y los mismos campos que en el rol cliente
  *   Devuelve en data el id del vehículo nuevo.
+ * - actualizar: cambia los datos de cualquier vehículo, también su cliente.
+ *   data: id y los mismos campos que insertar
  *
  * Acciones del rol cliente:
  * - listar: devuelve en data los vehículos del cliente.
@@ -199,6 +201,49 @@ if ($usuarioAuth["rol"] === "cliente") {
                 } else {
                     $msg = "Vehículo añadido correctamente";
                     $data = ["id" => $vehiculoId];
+                }
+            }
+            break;
+
+        case "actualizar":
+            $datos = $request["data"];
+            $id = (int) $datos["id"];
+
+            // Comprueba que el vehículo existe antes de cambiarlo
+            $vehiculoActual = new Vehiculo($id);
+
+            if ($vehiculoActual->obtener() === false) {
+                $success = false;
+                $msg = "No se ha encontrado el vehículo";
+            } else if ($datos["cliente_id"] === "") {
+                // Si se ha dejado el desplegable en "--seleccionar--", avisa a oficina
+                $success = false;
+                $msg = "Elige un cliente";
+            } else {
+                // Convierte los campos vacíos en null, igual que al añadir
+                $matricula = $datos["matricula"] === "" ? null : $datos["matricula"];
+                $marca     = $datos["marca"] === "" ? null : $datos["marca"];
+                $modelo    = $datos["modelo"] === "" ? null : $datos["modelo"];
+                $color     = $datos["color"] === "" ? null : $datos["color"];
+
+                /* El combustible también, por si el vehículo no tenía ninguno guardado
+                   y el desplegable llega sin opción elegida */
+                $combustible = $datos["combustible"] === "" ? null : $datos["combustible"];
+
+                // El año y los kilómetros llegan como texto y se pasan a número entero
+                $anio       = $datos["anio"] === "" ? null : (int) $datos["anio"];
+                $kilometros = $datos["kilometros"] === "" ? null : (int) $datos["kilometros"];
+
+                /* Crea el vehículo con su id y el cliente elegido en el desplegable,
+                   así oficina también puede cambiar de dueño un vehículo */
+                $vehiculo = new Vehiculo($id, (int) $datos["cliente_id"], $matricula, $marca, $modelo, $anio,
+                                         $color, $kilometros, $combustible);
+
+                if ($vehiculo->actualizar()) {
+                    $msg = "Vehículo actualizado correctamente";
+                } else {
+                    $success = false;
+                    $msg = "No se ha podido guardar el vehículo (¿matrícula repetida o falta algún dato?)";
                 }
             }
             break;

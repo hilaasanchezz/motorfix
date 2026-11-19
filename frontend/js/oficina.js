@@ -2,7 +2,7 @@
  * Controlador de la vista oficina.html (panel de oficina).
  *
  * Gestiona el listado, el alta, la edición y el borrado de los clientes del taller,
- * y el listado y el alta de los vehículos de todos los clientes.
+ * y el listado, el alta y la edición de los vehículos de todos los clientes.
  *
  * @author Hilario Sánchez Pérez
  */
@@ -18,6 +18,12 @@ let clienteEditando = null;
 
 // Clientes que se han cargado en la tabla
 let clientes = [];
+
+// Id del vehículo que se está editando, o null si el formulario está en modo añadir
+let vehiculoEditando = null;
+
+// Vehículos que se han cargado en la tabla
+let vehiculos = [];
 
 /**
  * Carga todos los clientes en la tabla "Clientes".
@@ -283,8 +289,9 @@ function eliminarCliente(id) {
  * Carga todos los vehículos en la tabla "Vehículos".
  *
  * Se llama desde cargarClientes(), cuando ya están cargados los clientes. Pide a
- * vehiculo_sw.php la acción "listar" y crea una fila por cada vehículo con el nombre
- * de su cliente, sus datos y sus botones "Editar" y "Eliminar". Si falla, pone el mensaje en rojo.
+ * vehiculo_sw.php la acción "listar", guarda los vehículos en la variable vehiculos y crea
+ * una fila por cada uno con el nombre de su cliente, sus datos y sus botones "Editar" y
+ * "Eliminar". Si falla, pone el mensaje en rojo.
  */
 function cargarVehiculos() {
     // Prepara la petición para listar los vehículos con el token guardado en localStorage
@@ -308,6 +315,9 @@ function cargarVehiculos() {
             mensaje.className = "error";
             return;
         }
+
+        // Guarda los vehículos para poder rellenar el formulario al pulsar "Editar"
+        vehiculos = response.data;
 
         // Vacía la tabla antes de rellenarla para que no se repitan las filas
         const lista = document.getElementById("lista-vehiculos");
@@ -398,18 +408,62 @@ function rellenarClientesVehiculo() {
 }
 
 /**
- * Añade el vehículo del formulario al cliente elegido en el desplegable.
+ * Prepara el formulario para editar un vehículo.
  *
- * Se llama desde el botón "Añadir vehículo" con onClick="guardarVehiculo()". Envía a
- * vehiculo_sw.php la acción "insertar" con los datos del formulario y pone el mensaje
- * del servidor en verde o en rojo. Si va bien, vacía el formulario y vuelve a cargar la tabla.
+ * Se llama desde el botón "Editar" de cada fila de la tabla "Vehículos". Rellena el
+ * formulario con los datos del vehículo (también su cliente en el desplegable), guarda su
+ * id en vehiculoEditando y cambia el texto del botón a "Guardar cambios". No envía nada al servidor.
+ *
+ * @param {number} id Id del vehículo que se va a editar
+ */
+function editarVehiculo(id) {
+    // Busca en la lista cargada el vehículo con ese id
+    let vehiculo = null;
+    for (let i = 0; i < vehiculos.length; i++) {
+        if (vehiculos[i].id === id) {
+            vehiculo = vehiculos[i];
+        }
+    }
+
+    // Rellena el formulario con sus datos para poder cambiarlos
+    document.getElementById("cliente-vehiculo").value = vehiculo.cliente_id;
+    document.getElementById("matricula").value = vehiculo.matricula;
+    document.getElementById("marca").value = vehiculo.marca;
+    document.getElementById("modelo").value = vehiculo.modelo;
+    document.getElementById("anio").value = vehiculo.anio;
+    document.getElementById("color").value = vehiculo.color;
+    document.getElementById("kilometros").value = vehiculo.kilometros;
+    document.getElementById("combustible").value = vehiculo.combustible;
+
+    /* Guarda el id para que guardarVehiculo() sepa que tiene que actualizar
+       y cambia el texto del botón para que se vea que se está editando */
+    vehiculoEditando = id;
+    document.getElementById("anadir-vehiculo").value = "Guardar cambios";
+}
+
+/**
+ * Guarda el vehículo del formulario: lo añade si es nuevo o lo actualiza si se está editando.
+ *
+ * Se llama desde el botón del formulario con onClick="guardarVehiculo()". Envía a
+ * vehiculo_sw.php la acción "insertar" o "actualizar" según vehiculoEditando, con el
+ * cliente elegido en el desplegable, y pone el mensaje del servidor en verde o en rojo.
+ * Si va bien, vacía el formulario, lo deja en modo añadir y vuelve a cargar la tabla.
  */
 function guardarVehiculo() {
-    // Prepara la petición con el cliente elegido y los datos del formulario
+    // Elige la acción: "insertar" si se está añadiendo y "actualizar" si se está editando
+    let accion;
+    if (vehiculoEditando === null) {
+        accion = "insertar";
+    } else {
+        accion = "actualizar";
+    }
+
+    // Prepara la petición con el id del vehículo que se edita, el cliente elegido y los datos del formulario
     let request = {
-        action: "insertar",
+        action: accion,
         auth_key: localStorage.getItem("auth_key"),
         data: {
+            id: vehiculoEditando,
             cliente_id: document.getElementById("cliente-vehiculo").value,
             matricula: document.getElementById("matricula").value,
             marca: document.getElementById("marca").value,
@@ -439,8 +493,11 @@ function guardarVehiculo() {
         if (response.success) {
             mensaje.className = "exito";
 
-            // Vacía el formulario y vuelve a cargar la tabla para que se vea el vehículo nuevo
+            /* Vacía el formulario, lo deja otra vez en modo añadir y vuelve a cargar
+               la tabla para que se vean los cambios */
             document.getElementById("form-vehiculo").reset();
+            vehiculoEditando = null;
+            document.getElementById("anadir-vehiculo").value = "Añadir vehículo";
             cargarVehiculos();
         } else {
             mensaje.className = "error";
