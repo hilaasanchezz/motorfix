@@ -15,7 +15,7 @@ const url = "../../backend/sw/auth_sw.php";
  *
  * Se llama desde el botón "Entrar" de login.html con onClick="login()".
  * Si va bien, guarda el auth_key en localStorage y redirige: el cliente va a
- * cliente.html y el resto de roles ven un aviso (sus paneles llegan en la semana 5).
+ * cliente.html, oficina va a oficina.html y el resto de roles ven un aviso.
  * Si falla, muestra el mensaje del servidor en rojo.
  */
 function login() {
@@ -51,10 +51,12 @@ function login() {
            para enviarlo al servidor en cada petición */
         localStorage.setItem("auth_key", response.data.auth_key);
 
-        /* Lleva a cada usuario a su panel según su rol. De momento solo existe
-           el panel de cliente; los de oficina, mecánico y admin llegarán en la semana 5 */
+        /* Lleva a cada usuario a su panel según su rol. De momento existen los paneles
+           de cliente y de oficina; los de mecánico y admin llegarán más adelante */
         if (response.data.rol === "cliente") {
             window.location.href = "cliente.html";
+        } else if (response.data.rol === "oficina") {
+            window.location.href = "oficina.html";
         } else {
             mostrarMensaje("Tu panel todavía no está disponible", false);
         }
