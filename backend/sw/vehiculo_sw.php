@@ -1,13 +1,25 @@
 <?php
 
 /**
- * Servicio web de los vehículos del cliente que ha iniciado sesión.
+ * Servicio web de los vehículos (panel de cliente y panel de oficina).
  *
  * Recibe por POST un JSON con la acción, el token (auth_key) y sus datos, y devuelve
- * siempre un JSON con la estructura {success, msg, data}. Solo pueden usarlo los
- * usuarios con rol cliente, y cada cliente solo ve y modifica sus propios vehículos.
+ * siempre un JSON con la estructura {success, msg, data}. Pueden usarlo los usuarios
+ * con rol cliente, que solo ven y modifican sus propios vehículos, y los de oficina,
+ * que trabajan con los vehículos de todos los clientes.
  *
- * Acciones:
+ * Acciones del rol oficina:
+ * - listar: devuelve en data todos los vehículos.
+ * - insertar: añade un vehículo al cliente elegido.
+ *   data: cliente_id y los mismos campos que en el rol cliente
+ *   Devuelve en data el id del vehículo nuevo.
+ * - actualizar: cambia los datos de cualquier vehículo, también su cliente.
+ *   data: id y los mismos campos que insertar
+ * - eliminar: borra cualquier vehículo y sus citas. No se puede si alguna de sus
+ *   citas tiene factura.
+ *   data: id
+ *
+ * Acciones del rol cliente:
  * - listar: devuelve en data los vehículos del cliente.
  * - insertar: añade un vehículo al cliente.
  *   data: matricula, marca, modelo, anio, color, kilometros, combustible
@@ -44,11 +56,8 @@ $success = true;
 $msg = "";
 $data = [];
 
-// De momento solo pueden entrar los clientes (oficina se añadirá en la semana 5)
-if ($usuarioAuth["rol"] !== "cliente") {
-    $success = false;
-    $msg = "No tienes permisos para acceder a esta sección";
-} else {
+// Cada rol tiene sus acciones: el cliente trabaja con sus vehículos y oficina con todos
+if ($usuarioAuth["rol"] === "cliente") {
     // Busca la ficha de cliente del usuario para saber qué vehículos son suyos
     $cliente = Cliente::obtenerPorUsuario($usuarioAuth["id"]);
 
@@ -158,6 +167,115 @@ if ($usuarioAuth["rol"] !== "cliente") {
                 $msg = "Acción no soportada";
         }
     }
+} else if ($usuarioAuth["rol"] === "oficina") {
+    switch ($request["action"] ?? "") {
+        case "listar":
+            // Devuelve todos los vehículos del taller
+            $data = Vehiculo::listar();
+            $msg = "Vehículos obtenidos correctamente";
+            break;
+
+        case "insertar":
+            $datos = $request["data"];
+
+            if ($datos["cliente_id"] === "") {
+                // Si no se ha elegido ningún cliente en el desplegable, avisa a oficina
+                $success = false;
+                $msg = "Elige un cliente";
+            } else {
+                // Convierte los campos vacíos en null, igual que en el panel de cliente
+                $matricula = $datos["matricula"] === "" ? null : $datos["matricula"];
+                $marca     = $datos["marca"] === "" ? null : $datos["marca"];
+                $modelo    = $datos["modelo"] === "" ? null : $datos["modelo"];
+                $color     = $datos["color"] === "" ? null : $datos["color"];
+
+                // El año y los kilómetros llegan como texto y se pasan a número entero
+                $anio       = $datos["anio"] === "" ? null : (int) $datos["anio"];
+                $kilometros = $datos["kilometros"] === "" ? null : (int) $datos["kilometros"];
+
+                // Crea el vehículo con el cliente que se ha elegido en el desplegable
+                $vehiculo = new Vehiculo(null, (int) $datos["cliente_id"], $matricula, $marca, $modelo, $anio,
+                                         $color, $kilometros, $datos["combustible"]);
+                $vehiculoId = $vehiculo->insertar();
+
+                if ($vehiculoId === false) {
+                    $success = false;
+                    $msg = "No se ha podido añadir el vehículo (¿matrícula repetida o falta algún dato?)";
+                } else {
+                    $msg = "Vehículo añadido correctamente";
+                    $data = ["id" => $vehiculoId];
+                }
+            }
+            break;
+
+        case "actualizar":
+            $datos = $request["data"];
+            $id = (int) $datos["id"];
+
+            // Comprueba que el vehículo existe antes de cambiarlo
+            $vehiculoActual = new Vehiculo($id);
+
+            if ($vehiculoActual->obtener() === false) {
+                $success = false;
+                $msg = "No se ha encontrado el vehículo";
+            } else if ($datos["cliente_id"] === "") {
+                // Si se ha dejado el desplegable en "--seleccionar--", avisa a oficina
+                $success = false;
+                $msg = "Elige un cliente";
+            } else {
+                // Convierte los campos vacíos en null, igual que al añadir
+                $matricula = $datos["matricula"] === "" ? null : $datos["matricula"];
+                $marca     = $datos["marca"] === "" ? null : $datos["marca"];
+                $modelo    = $datos["modelo"] === "" ? null : $datos["modelo"];
+                $color     = $datos["color"] === "" ? null : $datos["color"];
+
+                /* El combustible también, por si el vehículo no tenía ninguno guardado
+                   y el desplegable llega sin opción elegida */
+                $combustible = $datos["combustible"] === "" ? null : $datos["combustible"];
+
+                // El año y los kilómetros llegan como texto y se pasan a número entero
+                $anio       = $datos["anio"] === "" ? null : (int) $datos["anio"];
+                $kilometros = $datos["kilometros"] === "" ? null : (int) $datos["kilometros"];
+
+                /* Crea el vehículo con su id y el cliente elegido en el desplegable,
+                   así oficina también puede cambiar de dueño un vehículo */
+                $vehiculo = new Vehiculo($id, (int) $datos["cliente_id"], $matricula, $marca, $modelo, $anio,
+                                         $color, $kilometros, $combustible);
+
+                if ($vehiculo->actualizar()) {
+                    $msg = "Vehículo actualizado correctamente";
+                } else {
+                    $success = false;
+                    $msg = "No se ha podido guardar el vehículo (¿matrícula repetida o falta algún dato?)";
+                }
+            }
+            break;
+
+        case "eliminar":
+            $vehiculo = new Vehiculo((int) $request["data"]["id"]);
+
+            // Comprueba que el vehículo existe antes de intentar borrarlo
+            if ($vehiculo->obtener() === false) {
+                $success = false;
+                $msg = "No se ha encontrado el vehículo";
+            } else if ($vehiculo->eliminar()) {
+                $msg = "Vehículo eliminado correctamente";
+            } else {
+                /* La BD no deja borrarlo si alguna de sus citas tiene factura;
+                   las citas sin factura se borran con el vehículo */
+                $success = false;
+                $msg = "No se ha podido eliminar el vehículo (¿tiene citas con factura?)";
+            }
+            break;
+
+        default:
+            $success = false;
+            $msg = "Acción no soportada";
+    }
+} else {
+    // El resto de roles no pueden entrar
+    $success = false;
+    $msg = "No tienes permisos para acceder a esta sección";
 }
 
 // Devuelve la respuesta con la estructura estándar
