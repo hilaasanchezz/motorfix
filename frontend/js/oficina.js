@@ -2,7 +2,8 @@
  * Controlador de la vista oficina.html (panel de oficina).
  *
  * Gestiona el listado, el alta, la edición y el borrado de los clientes del taller,
- * y el listado, el alta, la edición y el borrado de los vehículos de todos los clientes.
+ * el listado, el alta, la edición y el borrado de los vehículos de todos los clientes,
+ * y el listado de todas las citas.
  *
  * @author Hilario Sánchez Pérez
  */
@@ -12,6 +13,9 @@ const urlCliente = "../../backend/sw/cliente_sw.php";
 
 // Dirección del servicio web de los vehículos
 const urlVehiculo = "../../backend/sw/vehiculo_sw.php";
+
+// Dirección del servicio web de las citas
+const urlCita = "../../backend/sw/cita_sw.php";
 
 // Id del cliente que se está editando, o null si el formulario está en modo añadir
 let clienteEditando = null;
@@ -289,9 +293,9 @@ function eliminarCliente(id) {
  * Carga todos los vehículos en la tabla "Vehículos".
  *
  * Se llama desde cargarClientes(), cuando ya están cargados los clientes. Pide a
- * vehiculo_sw.php la acción "listar", guarda los vehículos en la variable vehiculos y crea
- * una fila por cada uno con el nombre de su cliente, sus datos y sus botones "Editar" y
- * "Eliminar". Si falla, pone el mensaje en rojo.
+ * vehiculo_sw.php la acción "listar", guarda los vehículos en la variable vehiculos, carga
+ * las citas y crea una fila por cada vehículo con el nombre de su cliente, sus datos y sus
+ * botones "Editar" y "Eliminar". Si falla, pone el mensaje en rojo.
  */
 function cargarVehiculos() {
     // Prepara la petición para listar los vehículos con el token guardado en localStorage
@@ -318,6 +322,10 @@ function cargarVehiculos() {
 
         // Guarda los vehículos para poder rellenar el formulario al pulsar "Editar"
         vehiculos = response.data;
+
+        /* Carga las citas después de tener los vehículos, porque la tabla de citas
+           necesita los vehículos para poner la matrícula y el cliente de cada cita */
+        cargarCitas();
 
         // Vacía la tabla antes de rellenarla para que no se repitan las filas
         const lista = document.getElementById("lista-vehiculos");
@@ -573,6 +581,101 @@ function eliminarVehiculo(id) {
     .catch((error) => {
         console.error("Error:", error);
         const mensaje = document.getElementById("mensaje-vehiculo");
+        mensaje.textContent = "No se ha podido conectar con el servidor";
+        mensaje.className = "error";
+    });
+}
+
+/**
+ * Carga todas las citas en la tabla "Citas".
+ *
+ * Se llama desde cargarVehiculos(), cuando ya están cargados los vehículos y los clientes.
+ * Pide a cita_sw.php la acción "listar" y crea una fila por cada cita con la fecha, la
+ * matrícula, el cliente, el motivo, el estado, el mecánico y su botón "Gestionar".
+ * Si falla, pone el mensaje en rojo.
+ */
+function cargarCitas() {
+    // Prepara la petición para listar las citas con el token guardado en localStorage
+    let request = { action: "listar", auth_key: localStorage.getItem("auth_key") };
+
+    // Envía la petición por POST a cita_sw.php
+    fetch(urlCita, {
+        method: "POST",
+        body: JSON.stringify(request),
+        headers: {
+            "Content-Type": "application/json",
+        },
+    })
+    // Convierte el texto que devuelve el servidor en un objeto de JavaScript
+    .then((res) => res.json())
+    .then((response) => {
+        if (!response.success) {
+            // Si el servidor no devuelve las citas pone su mensaje en rojo
+            const mensaje = document.getElementById("mensaje-cita");
+            mensaje.textContent = response.msg;
+            mensaje.className = "error";
+            return;
+        }
+
+        // Vacía la tabla antes de rellenarla para que no se repitan las filas
+        const lista = document.getElementById("lista-citas");
+        lista.textContent = "";
+
+        // Crea una fila por cada cita con sus datos en el mismo orden que la cabecera
+        for (let i = 0; i < response.data.length; i++) {
+            const cita = response.data[i];
+            const fila = document.createElement("tr");
+
+            /* Busca en los vehículos cargados el vehículo de la cita para poner su matrícula,
+               y en los clientes cargados el dueño de ese vehículo para poner su nombre */
+            let matricula = "";
+            let nombreCliente = "";
+            for (let j = 0; j < vehiculos.length; j++) {
+                if (vehiculos[j].id === cita.vehiculo_id) {
+                    matricula = vehiculos[j].matricula;
+
+                    for (let k = 0; k < clientes.length; k++) {
+                        if (clientes[k].id === vehiculos[j].cliente_id) {
+                            nombreCliente = clientes[k].nombre + " " + clientes[k].apellidos;
+                        }
+                    }
+                }
+            }
+
+            // Si la cita todavía no tiene mecánico pone "Sin asignar"
+            let mecanico = "";
+            if (cita.mecanico_id === null) {
+                mecanico = "Sin asignar";
+            }
+
+            const datos = [cita.fecha_cita, matricula, nombreCliente, cita.motivo, cita.estado, mecanico];
+            for (let j = 0; j < datos.length; j++) {
+                const celda = document.createElement("td");
+                celda.textContent = datos[j];
+                fila.appendChild(celda);
+            }
+
+            /* Crea la última celda con el botón "Gestionar". Tiene un addEventListener que,
+               al hacer clic, llama a gestionarCita() con el id de esta cita, por ejemplo
+               gestionarCita(1), para que sepa qué cita tiene que gestionar */
+            const acciones = document.createElement("td");
+
+            const gestionar = document.createElement("input");
+            gestionar.type = "button";
+            gestionar.value = "Gestionar";
+            gestionar.addEventListener("click", function () {
+                gestionarCita(cita.id);
+            });
+            acciones.appendChild(gestionar);
+
+            fila.appendChild(acciones);
+            lista.appendChild(fila);
+        }
+    })
+    // Si la petición falla (por ejemplo, el servidor no responde) muestra un error
+    .catch((error) => {
+        console.error("Error:", error);
+        const mensaje = document.getElementById("mensaje-cita");
         mensaje.textContent = "No se ha podido conectar con el servidor";
         mensaje.className = "error";
     });
