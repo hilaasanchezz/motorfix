@@ -15,6 +15,9 @@
  *   Devuelve en data el id del vehículo nuevo.
  * - actualizar: cambia los datos de cualquier vehículo, también su cliente.
  *   data: id y los mismos campos que insertar
+ * - eliminar: borra cualquier vehículo y sus citas. No se puede si alguna de sus
+ *   citas tiene factura.
+ *   data: id
  *
  * Acciones del rol cliente:
  * - listar: devuelve en data los vehículos del cliente.
@@ -245,6 +248,23 @@ if ($usuarioAuth["rol"] === "cliente") {
                     $success = false;
                     $msg = "No se ha podido guardar el vehículo (¿matrícula repetida o falta algún dato?)";
                 }
+            }
+            break;
+
+        case "eliminar":
+            $vehiculo = new Vehiculo((int) $request["data"]["id"]);
+
+            // Comprueba que el vehículo existe antes de intentar borrarlo
+            if ($vehiculo->obtener() === false) {
+                $success = false;
+                $msg = "No se ha encontrado el vehículo";
+            } else if ($vehiculo->eliminar()) {
+                $msg = "Vehículo eliminado correctamente";
+            } else {
+                /* La BD no deja borrarlo si alguna de sus citas tiene factura;
+                   las citas sin factura se borran con el vehículo */
+                $success = false;
+                $msg = "No se ha podido eliminar el vehículo (¿tiene citas con factura?)";
             }
             break;
 
