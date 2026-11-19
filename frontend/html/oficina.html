@@ -20,6 +20,7 @@
         <ul>
             <li><a href="#clientes">Clientes</a></li>
             <li><a href="#vehiculos">Vehículos</a></li>
+            <li><a href="#citas">Citas</a></li>
         </ul>
     </nav>
 
@@ -149,6 +150,51 @@
                 <p id="mensaje-vehiculo"></p>
 
                 <input type="button" value="Añadir vehículo" id="anadir-vehiculo" onClick="guardarVehiculo()">
+            </form>
+        </section>
+
+        <!-- Sección de citas: listado de todas las citas y formulario para validarlas y asignar mecánico -->
+        <section id="citas">
+            <h2>Citas</h2>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Vehículo</th>
+                        <th>Cliente</th>
+                        <th>Motivo</th>
+                        <th>Estado</th>
+                        <th>Mecánico</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <!-- Aquí se mostrarán todas las citas, cada una con su botón de gestionar -->
+                <tbody id="lista-citas">
+                </tbody>
+            </table>
+
+            <h3>Gestionar cita</h3>
+            <form id="form-cita">
+                <div>
+                    <label for="estado-cita">Estado: </label>
+                    <select name="estado" id="estado-cita">
+                        <option value="pendiente">Pendiente</option>
+                        <option value="confirmada">Confirmada</option>
+                        <option value="cancelada">Cancelada</option>
+                    </select>
+                </div>
+                <div>
+                    <label for="mecanico-cita">Mecánico: </label>
+                    <!-- Aquí se mostrarán los mecánicos para elegir a cuál se asigna la cita -->
+                    <select name="mecanico_id" id="mecanico-cita">
+                    </select>
+                </div>
+
+                <!-- Aquí se mostrarán los mensajes de error o de éxito -->
+                <p id="mensaje-cita"></p>
+
+                <input type="button" value="Guardar" id="guardar-cita" onClick="guardarCita()">
             </form>
         </section>
     </main>
