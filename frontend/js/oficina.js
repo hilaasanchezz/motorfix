@@ -3,7 +3,7 @@
  *
  * Gestiona el listado, el alta, la edición y el borrado de los clientes del taller,
  * el listado, el alta, la edición y el borrado de los vehículos de todos los clientes,
- * y el listado de todas las citas.
+ * y el listado de todas las citas y el cambio de su estado.
  *
  * @author Hilario Sánchez Pérez
  */
@@ -28,6 +28,12 @@ let vehiculoEditando = null;
 
 // Vehículos que se han cargado en la tabla
 let vehiculos = [];
+
+// Id de la cita que se está gestionando, o null si no se ha elegido ninguna
+let citaGestionando = null;
+
+// Citas que se han cargado en la tabla
+let citas = [];
 
 /**
  * Carga todos los clientes en la tabla "Clientes".
@@ -590,8 +596,9 @@ function eliminarVehiculo(id) {
  * Carga todas las citas en la tabla "Citas".
  *
  * Se llama desde cargarVehiculos(), cuando ya están cargados los vehículos y los clientes.
- * Pide a cita_sw.php la acción "listar" y crea una fila por cada cita con la fecha, la
- * matrícula, el cliente, el motivo, el estado, el mecánico y su botón "Gestionar".
+ * Pide a cita_sw.php la acción "listar", guarda las citas en la variable citas y crea una
+ * fila por cada una con la fecha, la matrícula, el cliente, el motivo, el estado, el mecánico
+ * y su botón "Gestionar".
  * Si falla, pone el mensaje en rojo.
  */
 function cargarCitas() {
@@ -616,6 +623,9 @@ function cargarCitas() {
             mensaje.className = "error";
             return;
         }
+
+        // Guarda las citas para poder rellenar el formulario al pulsar "Gestionar"
+        citas = response.data;
 
         // Vacía la tabla antes de rellenarla para que no se repitan las filas
         const lista = document.getElementById("lista-citas");
@@ -676,6 +686,105 @@ function cargarCitas() {
     .catch((error) => {
         console.error("Error:", error);
         const mensaje = document.getElementById("mensaje-cita");
+        mensaje.textContent = "No se ha podido conectar con el servidor";
+        mensaje.className = "error";
+    });
+}
+
+/**
+ * Prepara el formulario "Gestionar cita" con la cita elegida.
+ *
+ * Se llama desde el botón "Gestionar" de cada fila de la tabla "Citas". Si la cita está
+ * en reparación o finalizada, avisa de que no se puede cambiar. Si no, pone su estado en
+ * el desplegable, guarda su id en citaGestionando e indica qué cita se está gestionando.
+ * No envía nada al servidor.
+ *
+ * @param {number} id Id de la cita que se va a gestionar
+ */
+function gestionarCita(id) {
+    // Busca en la lista cargada la cita con ese id
+    let cita = null;
+    for (let i = 0; i < citas.length; i++) {
+        if (citas[i].id === id) {
+            cita = citas[i];
+        }
+    }
+
+    const mensaje = document.getElementById("mensaje-cita");
+
+    if (cita.estado === "en_reparacion" || cita.estado === "finalizada") {
+        // Las citas en reparación o finalizadas las lleva el mecánico, así que no se pueden gestionar
+        citaGestionando = null;
+        mensaje.textContent = "No se puede cambiar una cita en reparación o finalizada";
+        mensaje.className = "error";
+    } else {
+        // Pone el estado actual de la cita en el desplegable para poder cambiarlo
+        document.getElementById("estado-cita").value = cita.estado;
+
+        // Guarda el id para que guardarCita() sepa qué cita tiene que cambiar y lo indica
+        citaGestionando = id;
+        mensaje.textContent = "Gestionando la cita del " + cita.fecha_cita;
+        mensaje.className = "";
+    }
+}
+
+/**
+ * Guarda el estado elegido para la cita que se está gestionando.
+ *
+ * Se llama desde el botón "Guardar" del formulario con onClick="guardarCita()". Si no se
+ * ha elegido ninguna cita, avisa. Si no, envía a cita_sw.php la acción "actualizar" con el
+ * id de la cita y el estado elegido, y pone el mensaje del servidor en verde o en rojo.
+ * Si va bien, vacía el formulario y vuelve a cargar la tabla.
+ */
+function guardarCita() {
+    const mensaje = document.getElementById("mensaje-cita");
+
+    // Si no se ha pulsado "Gestionar" en ninguna cita, avisa y no envía nada
+    if (citaGestionando === null) {
+        mensaje.textContent = "Pulsa \"Gestionar\" en una cita de la tabla";
+        mensaje.className = "error";
+        return;
+    }
+
+    // Prepara la petición con el id de la cita y el estado elegido
+    let request = {
+        action: "actualizar",
+        auth_key: localStorage.getItem("auth_key"),
+        data: {
+            id: citaGestionando,
+            estado: document.getElementById("estado-cita").value,
+        },
+    };
+
+    // Envía la petición por POST a cita_sw.php
+    fetch(urlCita, {
+        method: "POST",
+        body: JSON.stringify(request),
+        headers: {
+            "Content-Type": "application/json",
+        },
+    })
+    // Convierte el texto que devuelve el servidor en un objeto de JavaScript
+    .then((res) => res.json())
+    .then((response) => {
+        // Pone el mensaje del servidor en verde si ha ido bien o en rojo si no
+        mensaje.textContent = response.msg;
+
+        if (response.success) {
+            mensaje.className = "exito";
+
+            /* Vacía el formulario, olvida la cita que se estaba gestionando y vuelve
+               a cargar la tabla para que se vea el estado nuevo */
+            document.getElementById("form-cita").reset();
+            citaGestionando = null;
+            cargarCitas();
+        } else {
+            mensaje.className = "error";
+        }
+    })
+    // Si la petición falla (por ejemplo, el servidor no responde) muestra un error
+    .catch((error) => {
+        console.error("Error:", error);
         mensaje.textContent = "No se ha podido conectar con el servidor";
         mensaje.className = "error";
     });

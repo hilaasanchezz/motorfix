@@ -10,6 +10,9 @@
  *
  * Acciones del rol oficina:
  * - listar: devuelve en data todas las citas, ordenadas por fecha.
+ * - actualizar: cambia el estado de una cita a pendiente, confirmada o cancelada.
+ *   No se puede si la cita está en reparación o finalizada.
+ *   data: id, estado
  *
  * Acciones del rol cliente:
  * - listar: devuelve en data las citas de los vehículos del cliente, de la más reciente
@@ -113,6 +116,37 @@ if ($usuarioAuth["rol"] === "cliente") {
             // Devuelve todas las citas del taller
             $data = Cita::listar();
             $msg = "Citas obtenidas correctamente";
+            break;
+
+        case "actualizar":
+            $datos = $request["data"];
+
+            // Carga la cita de la BD para comprobar que existe y no perder el resto de sus datos
+            $cita = new Cita((int) $datos["id"]);
+            $datosCita = $cita->obtener();
+
+            if ($datosCita === false) {
+                $success = false;
+                $msg = "No se ha encontrado la cita";
+            } else if ($datosCita["estado"] === "en_reparacion" || $datosCita["estado"] === "finalizada") {
+                // Las citas en reparación o finalizadas las lleva el mecánico, así que oficina no las cambia
+                $success = false;
+                $msg = "No se puede cambiar una cita en reparación o finalizada";
+            } else if (!in_array($datos["estado"], ["pendiente", "confirmada", "cancelada"], true)) {
+                // Oficina solo puede dejar la cita pendiente, confirmarla o cancelarla
+                $success = false;
+                $msg = "El estado no es válido";
+            } else {
+                // Cambia el estado con el setter mágico (__set) y guarda la cita
+                $cita->estado = $datos["estado"];
+
+                if ($cita->actualizar()) {
+                    $msg = "Cita actualizada correctamente";
+                } else {
+                    $success = false;
+                    $msg = "No se ha podido guardar la cita";
+                }
+            }
             break;
 
         default:
