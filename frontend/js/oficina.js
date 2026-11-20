@@ -35,6 +35,9 @@ let citaGestionando = null;
 // Citas que se han cargado en la tabla
 let citas = [];
 
+// Mecánicos del taller, para el desplegable de "Gestionar cita" y la columna "Mecánico"
+let mecanicos = [];
+
 /**
  * Carga todos los clientes en la tabla "Clientes".
  *
@@ -300,8 +303,8 @@ function eliminarCliente(id) {
  *
  * Se llama desde cargarClientes(), cuando ya están cargados los clientes. Pide a
  * vehiculo_sw.php la acción "listar", guarda los vehículos en la variable vehiculos, carga
- * las citas y crea una fila por cada vehículo con el nombre de su cliente, sus datos y sus
- * botones "Editar" y "Eliminar". Si falla, pone el mensaje en rojo.
+ * los mecánicos y las citas, y crea una fila por cada vehículo con el nombre de su cliente,
+ * sus datos y sus botones "Editar" y "Eliminar". Si falla, pone el mensaje en rojo.
  */
 function cargarVehiculos() {
     // Prepara la petición para listar los vehículos con el token guardado en localStorage
@@ -329,9 +332,9 @@ function cargarVehiculos() {
         // Guarda los vehículos para poder rellenar el formulario al pulsar "Editar"
         vehiculos = response.data;
 
-        /* Carga las citas después de tener los vehículos, porque la tabla de citas
-           necesita los vehículos para poner la matrícula y el cliente de cada cita */
-        cargarCitas();
+        /* Carga los mecánicos y después las citas, porque la tabla de citas necesita los
+           vehículos y los mecánicos para poner la matrícula, el cliente y el mecánico de cada cita */
+        cargarMecanicos();
 
         // Vacía la tabla antes de rellenarla para que no se repitan las filas
         const lista = document.getElementById("lista-vehiculos");
@@ -595,7 +598,8 @@ function eliminarVehiculo(id) {
 /**
  * Carga todas las citas en la tabla "Citas".
  *
- * Se llama desde cargarVehiculos(), cuando ya están cargados los vehículos y los clientes.
+ * Se llama desde cargarMecanicos(), cuando ya están cargados los clientes, los vehículos y los
+ * mecánicos, y otra vez después de guardar una cita.
  * Pide a cita_sw.php la acción "listar", guarda las citas en la variable citas y crea una
  * fila por cada una con la fecha, la matrícula, el cliente, el motivo, el estado, el mecánico
  * y su botón "Gestionar".
@@ -652,10 +656,17 @@ function cargarCitas() {
                 }
             }
 
-            // Si la cita todavía no tiene mecánico pone "Sin asignar"
+            /* Si la cita todavía no tiene mecánico pone "Sin asignar"; si lo tiene,
+               lo busca en los mecánicos cargados para poner su nombre */
             let mecanico = "";
             if (cita.mecanico_id === null) {
                 mecanico = "Sin asignar";
+            } else {
+                for (let j = 0; j < mecanicos.length; j++) {
+                    if (mecanicos[j].id === cita.mecanico_id) {
+                        mecanico = mecanicos[j].nombre;
+                    }
+                }
             }
 
             const datos = [cita.fecha_cita, matricula, nombreCliente, cita.motivo, cita.estado, mecanico];
@@ -788,4 +799,77 @@ function guardarCita() {
         mensaje.textContent = "No se ha podido conectar con el servidor";
         mensaje.className = "error";
     });
+}
+
+/**
+ * Carga los mecánicos del taller y después las citas.
+ *
+ * Se llama desde cargarVehiculos(). Pide a cita_sw.php la acción "mecanicos", guarda los
+ * mecánicos en la variable mecanicos, rellena el desplegable de "Gestionar cita" y carga
+ * las citas, que necesitan los mecánicos para poner su nombre. Si falla, pone el mensaje en rojo.
+ */
+function cargarMecanicos() {
+    // Prepara la petición para listar los mecánicos con el token guardado en localStorage
+    let request = { action: "mecanicos", auth_key: localStorage.getItem("auth_key") };
+
+    // Envía la petición por POST a cita_sw.php
+    fetch(urlCita, {
+        method: "POST",
+        body: JSON.stringify(request),
+        headers: {
+            "Content-Type": "application/json",
+        },
+    })
+    // Convierte el texto que devuelve el servidor en un objeto de JavaScript
+    .then((res) => res.json())
+    .then((response) => {
+        if (!response.success) {
+            // Si el servidor no devuelve los mecánicos pone su mensaje en rojo
+            const mensaje = document.getElementById("mensaje-cita");
+            mensaje.textContent = response.msg;
+            mensaje.className = "error";
+            return;
+        }
+
+        // Guarda los mecánicos y los pone en el desplegable de "Gestionar cita"
+        mecanicos = response.data;
+        rellenarMecanicosCita();
+
+        // Carga las citas ahora que ya están los mecánicos
+        cargarCitas();
+    })
+    // Si la petición falla (por ejemplo, el servidor no responde) muestra un error
+    .catch((error) => {
+        console.error("Error:", error);
+        const mensaje = document.getElementById("mensaje-cita");
+        mensaje.textContent = "No se ha podido conectar con el servidor";
+        mensaje.className = "error";
+    });
+}
+
+/**
+ * Rellena el desplegable de mecánicos del formulario "Gestionar cita".
+ *
+ * Se llama desde cargarMecanicos(). Deja una primera opción "Sin asignar" con el valor vacío
+ * y una opción por cada mecánico, con su id como valor y su nombre como texto.
+ */
+function rellenarMecanicosCita() {
+    // Vacía el desplegable antes de rellenarlo para que no se repitan las opciones
+    const select = document.getElementById("mecanico-cita");
+    select.textContent = "";
+
+    // Añade una primera opción vacía para las citas que todavía no tienen mecánico
+    const primera = document.createElement("option");
+    primera.value = "";
+    primera.textContent = "Sin asignar";
+    select.appendChild(primera);
+
+    /* Crea una opción por cada mecánico. Su value es el id del mecánico, que es lo
+       que se enviará al asignarlo, y su texto es su nombre */
+    for (let i = 0; i < mecanicos.length; i++) {
+        const opt = document.createElement("option");
+        opt.value = mecanicos[i].id;
+        opt.textContent = mecanicos[i].nombre;
+        select.appendChild(opt);
+    }
 }

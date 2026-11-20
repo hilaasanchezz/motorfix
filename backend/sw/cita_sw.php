@@ -10,6 +10,7 @@
  *
  * Acciones del rol oficina:
  * - listar: devuelve en data todas las citas, ordenadas por fecha.
+ * - mecanicos: devuelve en data los mecánicos (id y nombre) para asignarlos a las citas.
  * - actualizar: cambia el estado de una cita a pendiente, confirmada o cancelada.
  *   No se puede si la cita está en reparación o finalizada.
  *   data: id, estado
@@ -40,6 +41,7 @@ require_once __DIR__ . '/../auth.inc.php';
 require_once __DIR__ . '/../model/Cliente.php';
 require_once __DIR__ . '/../model/Cita.php';
 require_once __DIR__ . '/../model/Vehiculo.php';
+require_once __DIR__ . '/../model/Usuario.php';
 
 // Lee el JSON que envía el fetch() y lo convierte en un array asociativo
 $request = json_decode(file_get_contents('php://input'), true);
@@ -116,6 +118,12 @@ if ($usuarioAuth["rol"] === "cliente") {
             // Devuelve todas las citas del taller
             $data = Cita::listar();
             $msg = "Citas obtenidas correctamente";
+            break;
+
+        case "mecanicos":
+            // Devuelve los usuarios con rol mecánico (id y nombre) para poder asignarlos a las citas
+            $data = Usuario::listarPorRol("mecanico");
+            $msg = "Mecánicos obtenidos correctamente";
             break;
 
         case "actualizar":
