@@ -199,6 +199,23 @@ class Cita {
         }
     }
 
+    // Devuelve las citas asignadas al mecánico indicado, con la matrícula, la marca y el modelo de su vehículo, ordenadas por fecha
+    public static function listarPorMecanico(int $mecanicoId): array {
+        try {
+            $sql = "SELECT citas.id, citas.vehiculo_id, vehiculos.matricula, vehiculos.marca, vehiculos.modelo,
+                           citas.fecha_cita, citas.motivo, citas.estado
+                    FROM citas JOIN vehiculos ON citas.vehiculo_id = vehiculos.id
+                    WHERE citas.mecanico_id = :mecanico_id
+                    ORDER BY citas.fecha_cita";
+
+            $stmt = Conection::getInstance()->getPDO()->prepare($sql);
+            $stmt->execute([':mecanico_id' => $mecanicoId]);
+            return $stmt->fetchAll();
+        } catch (PDOException $e) {
+            return [];
+        }
+    }
+
     /**
      * Actualiza todos los datos de la cita con el id actual.
      *
