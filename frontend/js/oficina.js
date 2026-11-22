@@ -3,7 +3,7 @@
  *
  * Gestiona el listado, el alta, la edición y el borrado de los clientes del taller,
  * el listado, el alta, la edición y el borrado de los vehículos de todos los clientes,
- * y el listado de todas las citas y el cambio de su estado.
+ * y el listado de todas las citas, el cambio de su estado y la asignación de mecánico.
  *
  * @author Hilario Sánchez Pérez
  */
@@ -706,8 +706,9 @@ function cargarCitas() {
  * Prepara el formulario "Gestionar cita" con la cita elegida.
  *
  * Se llama desde el botón "Gestionar" de cada fila de la tabla "Citas". Si la cita está
- * en reparación o finalizada, avisa de que no se puede cambiar. Si no, pone su estado en
- * el desplegable, guarda su id en citaGestionando e indica qué cita se está gestionando.
+ * en reparación o finalizada, avisa de que no se puede cambiar. Si no, pone su estado y su
+ * mecánico en los desplegables, guarda su id en citaGestionando e indica qué cita se está
+ * gestionando.
  * No envía nada al servidor.
  *
  * @param {number} id Id de la cita que se va a gestionar
@@ -732,6 +733,13 @@ function gestionarCita(id) {
         // Pone el estado actual de la cita en el desplegable para poder cambiarlo
         document.getElementById("estado-cita").value = cita.estado;
 
+        // Pone también su mecánico, o "Sin asignar" (valor vacío) si todavía no tiene
+        if (cita.mecanico_id === null) {
+            document.getElementById("mecanico-cita").value = "";
+        } else {
+            document.getElementById("mecanico-cita").value = cita.mecanico_id;
+        }
+
         // Guarda el id para que guardarCita() sepa qué cita tiene que cambiar y lo indica
         citaGestionando = id;
         mensaje.textContent = "Gestionando la cita del " + cita.fecha_cita;
@@ -740,11 +748,11 @@ function gestionarCita(id) {
 }
 
 /**
- * Guarda el estado elegido para la cita que se está gestionando.
+ * Guarda el estado y el mecánico elegidos para la cita que se está gestionando.
  *
  * Se llama desde el botón "Guardar" del formulario con onClick="guardarCita()". Si no se
  * ha elegido ninguna cita, avisa. Si no, envía a cita_sw.php la acción "actualizar" con el
- * id de la cita y el estado elegido, y pone el mensaje del servidor en verde o en rojo.
+ * id de la cita, el estado y el mecánico, y pone el mensaje del servidor en verde o en rojo.
  * Si va bien, vacía el formulario y vuelve a cargar la tabla.
  */
 function guardarCita() {
@@ -757,13 +765,14 @@ function guardarCita() {
         return;
     }
 
-    // Prepara la petición con el id de la cita y el estado elegido
+    // Prepara la petición con el id de la cita, el estado y el mecánico elegidos
     let request = {
         action: "actualizar",
         auth_key: localStorage.getItem("auth_key"),
         data: {
             id: citaGestionando,
             estado: document.getElementById("estado-cita").value,
+            mecanico_id: document.getElementById("mecanico-cita").value,
         },
     };
 

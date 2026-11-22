@@ -11,9 +11,10 @@
  * Acciones del rol oficina:
  * - listar: devuelve en data todas las citas, ordenadas por fecha.
  * - mecanicos: devuelve en data los mecánicos (id y nombre) para asignarlos a las citas.
- * - actualizar: cambia el estado de una cita a pendiente, confirmada o cancelada.
- *   No se puede si la cita está en reparación o finalizada.
- *   data: id, estado
+ * - actualizar: cambia el estado de una cita a pendiente, confirmada o cancelada, y le
+ *   asigna un mecánico (o ninguno si mecanico_id llega vacío). No se puede si la cita está
+ *   en reparación o finalizada.
+ *   data: id, estado, mecanico_id
  *
  * Acciones del rol cliente:
  * - listar: devuelve en data las citas de los vehículos del cliente, de la más reciente
@@ -145,14 +146,37 @@ if ($usuarioAuth["rol"] === "cliente") {
                 $success = false;
                 $msg = "El estado no es válido";
             } else {
-                // Cambia el estado con el setter mágico (__set) y guarda la cita
-                $cita->estado = $datos["estado"];
+                /* El mecánico llega vacío si se ha elegido "Sin asignar". Si no, comprueba con un
+                   bucle que el id es de uno de los mecánicos, para no asignar la cita a otro usuario */
+                $mecanicoId = null;
+                $mecanicoValido = true;
 
-                if ($cita->actualizar()) {
-                    $msg = "Cita actualizada correctamente";
-                } else {
+                if ($datos["mecanico_id"] !== "") {
+                    $mecanicoId = (int) $datos["mecanico_id"];
+                    $mecanicoValido = false;
+
+                    $mecanicos = Usuario::listarPorRol("mecanico");
+                    for ($i = 0; $i < count($mecanicos); $i++) {
+                        if ((int) $mecanicos[$i]["id"] === $mecanicoId) {
+                            $mecanicoValido = true;
+                        }
+                    }
+                }
+
+                if (!$mecanicoValido) {
                     $success = false;
-                    $msg = "No se ha podido guardar la cita";
+                    $msg = "El mecánico no es válido";
+                } else {
+                    // Cambia el estado y el mecánico con el setter mágico (__set) y guarda la cita
+                    $cita->estado = $datos["estado"];
+                    $cita->mecanicoId = $mecanicoId;
+
+                    if ($cita->actualizar()) {
+                        $msg = "Cita actualizada correctamente";
+                    } else {
+                        $success = false;
+                        $msg = "No se ha podido guardar la cita";
+                    }
                 }
             }
             break;
