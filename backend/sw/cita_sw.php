@@ -1,13 +1,22 @@
 <?php
 
 /**
- * Servicio web de las citas del cliente que ha iniciado sesión.
+ * Servicio web de las citas (panel de cliente y panel de oficina).
  *
  * Recibe por POST un JSON con la acción, el token (auth_key) y sus datos, y devuelve
- * siempre un JSON con la estructura {success, msg, data}. Solo pueden usarlo los
- * usuarios con rol cliente, y cada cliente solo ve y pide citas para sus propios vehículos.
+ * siempre un JSON con la estructura {success, msg, data}. Pueden usarlo los usuarios
+ * con rol cliente, que solo ven y piden citas para sus propios vehículos, y los de
+ * oficina, que trabajan con las citas de todos los clientes.
  *
- * Acciones:
+ * Acciones del rol oficina:
+ * - listar: devuelve en data todas las citas, ordenadas por fecha.
+ * - mecanicos: devuelve en data los mecánicos (id y nombre) para asignarlos a las citas.
+ * - actualizar: cambia el estado de una cita a pendiente, confirmada o cancelada, y le
+ *   asigna un mecánico (o ninguno si mecanico_id llega vacío). No se puede si la cita está
+ *   en reparación o finalizada.
+ *   data: id, estado, mecanico_id
+ *
+ * Acciones del rol cliente:
  * - listar: devuelve en data las citas de los vehículos del cliente, de la más reciente
  *   a la más antigua, con la matrícula de cada vehículo.
  * - insertar: pide una cita nueva, en estado pendiente y sin mecánico. El vehículo tiene
@@ -33,6 +42,7 @@ require_once __DIR__ . '/../auth.inc.php';
 require_once __DIR__ . '/../model/Cliente.php';
 require_once __DIR__ . '/../model/Cita.php';
 require_once __DIR__ . '/../model/Vehiculo.php';
+require_once __DIR__ . '/../model/Usuario.php';
 
 // Lee el JSON que envía el fetch() y lo convierte en un array asociativo
 $request = json_decode(file_get_contents('php://input'), true);
@@ -41,11 +51,8 @@ $success = true;
 $msg = "";
 $data = [];
 
-// De momento solo pueden entrar los clientes (oficina se añadirá en la semana 5)
-if ($usuarioAuth["rol"] !== "cliente") {
-    $success = false;
-    $msg = "No tienes permisos para acceder a esta sección";
-} else {
+// Cada rol tiene sus acciones: el cliente trabaja con sus citas y oficina con todas
+if ($usuarioAuth["rol"] === "cliente") {
     // Busca la ficha de cliente del usuario para saber qué citas son suyas
     $cliente = Cliente::obtenerPorUsuario($usuarioAuth["id"]);
 
@@ -106,6 +113,82 @@ if ($usuarioAuth["rol"] !== "cliente") {
                 $msg = "Acción no soportada";
         }
     }
+} else if ($usuarioAuth["rol"] === "oficina") {
+    switch ($request["action"] ?? "") {
+        case "listar":
+            // Devuelve todas las citas del taller
+            $data = Cita::listar();
+            $msg = "Citas obtenidas correctamente";
+            break;
+
+        case "mecanicos":
+            // Devuelve los usuarios con rol mecánico (id y nombre) para poder asignarlos a las citas
+            $data = Usuario::listarPorRol("mecanico");
+            $msg = "Mecánicos obtenidos correctamente";
+            break;
+
+        case "actualizar":
+            $datos = $request["data"];
+
+            // Carga la cita de la BD para comprobar que existe y no perder el resto de sus datos
+            $cita = new Cita((int) $datos["id"]);
+            $datosCita = $cita->obtener();
+
+            if ($datosCita === false) {
+                $success = false;
+                $msg = "No se ha encontrado la cita";
+            } else if ($datosCita["estado"] === "en_reparacion" || $datosCita["estado"] === "finalizada") {
+                // Las citas en reparación o finalizadas las lleva el mecánico, así que oficina no las cambia
+                $success = false;
+                $msg = "No se puede cambiar una cita en reparación o finalizada";
+            } else if (!in_array($datos["estado"], ["pendiente", "confirmada", "cancelada"], true)) {
+                // Oficina solo puede dejar la cita pendiente, confirmarla o cancelarla
+                $success = false;
+                $msg = "El estado no es válido";
+            } else {
+                /* El mecánico llega vacío si se ha elegido "Sin asignar". Si no, comprueba con un
+                   bucle que el id es de uno de los mecánicos, para no asignar la cita a otro usuario */
+                $mecanicoId = null;
+                $mecanicoValido = true;
+
+                if ($datos["mecanico_id"] !== "") {
+                    $mecanicoId = (int) $datos["mecanico_id"];
+                    $mecanicoValido = false;
+
+                    $mecanicos = Usuario::listarPorRol("mecanico");
+                    for ($i = 0; $i < count($mecanicos); $i++) {
+                        if ((int) $mecanicos[$i]["id"] === $mecanicoId) {
+                            $mecanicoValido = true;
+                        }
+                    }
+                }
+
+                if (!$mecanicoValido) {
+                    $success = false;
+                    $msg = "El mecánico no es válido";
+                } else {
+                    // Cambia el estado y el mecánico con el setter mágico (__set) y guarda la cita
+                    $cita->estado = $datos["estado"];
+                    $cita->mecanicoId = $mecanicoId;
+
+                    if ($cita->actualizar()) {
+                        $msg = "Cita actualizada correctamente";
+                    } else {
+                        $success = false;
+                        $msg = "No se ha podido guardar la cita";
+                    }
+                }
+            }
+            break;
+
+        default:
+            $success = false;
+            $msg = "Acción no soportada";
+    }
+} else {
+    // El resto de roles no pueden entrar
+    $success = false;
+    $msg = "No tienes permisos para acceder a esta sección";
 }
 
 // Devuelve la respuesta con la estructura estándar

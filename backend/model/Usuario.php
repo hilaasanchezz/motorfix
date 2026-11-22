@@ -171,6 +171,24 @@ class Usuario {
     }
 
     /**
+     * Devuelve los usuarios de un rol ordenados por nombre (por ejemplo, todos los mecánicos).
+     *
+     * @param string $rol Rol de los usuarios, uno de ROLES
+     * @return array Lista de usuarios con id y nombre, vacía si no hay ninguno o falla la consulta
+     */
+    public static function listarPorRol(string $rol): array {
+        try {
+            $sql = "SELECT id, nombre FROM usuarios WHERE rol = :rol ORDER BY nombre";
+
+            $stmt = Conection::getInstance()->getPDO()->prepare($sql);
+            $stmt->execute([':rol' => $rol]);
+            return $stmt->fetchAll();
+        } catch (PDOException $e) {
+            return [];
+        }
+    }
+
+    /**
      * Actualiza el nombre, email, rol y estado del usuario. No modifica la contraseña.
      *
      * @return bool true si el usuario existe y se ha actualizado, false si el rol
