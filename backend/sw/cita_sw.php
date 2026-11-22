@@ -185,6 +185,18 @@ if ($usuarioAuth["rol"] === "cliente") {
             $success = false;
             $msg = "Acción no soportada";
     }
+} else if ($usuarioAuth["rol"] === "mecanico") {
+    switch ($request["action"] ?? "") {
+        case "listar":
+            // Devuelve solo las citas que oficina ha asignado al mecánico que ha iniciado sesión
+            $data = Cita::listarPorMecanico($usuarioAuth["id"]);
+            $msg = "Citas obtenidas correctamente";
+            break;
+
+        default:
+            $success = false;
+            $msg = "Acción no soportada";
+    }
 } else {
     // El resto de roles no pueden entrar
     $success = false;
