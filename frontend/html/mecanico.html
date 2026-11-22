@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MotorFix - Panel de mecánico</title>
+    <link rel="stylesheet" href="../css/cliente.css">
+    <script src="../js/sesion.js"></script>
+    <script src="../js/mecanico.js"></script>
+</head>
+<body>
+    <!-- Cabecera con el logo y el botón para cerrar sesión -->
+    <header>
+        <h1>Motor<span>Fix</span></h1>
+        <input type="button" value="Cerrar sesión" id="cerrar-sesion" onClick="cerrarSesion()">
+    </header>
+
+    <!-- Menú con las secciones del panel de mecánico -->
+    <nav>
+        <ul>
+            <li><a href="#citas">Mis citas</a></li>
+            <li><a href="#horas">Horas</a></li>
+            <li><a href="#repuestos">Repuestos</a></li>
+        </ul>
+    </nav>
+
+    <main>
+        <!-- Sección de citas: las citas asignadas al mecánico y formulario para cambiar su estado -->
+        <section id="citas">
+            <h2>Mis citas</h2>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Matrícula</th>
+                        <th>Marca</th>
+                        <th>Modelo</th>
+                        <th>Motivo</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <!-- Aquí se mostrarán las citas asignadas al mecánico, cada una con su botón de elegir -->
+                <tbody id="lista-citas">
+                </tbody>
+            </table>
+
+            <h3>Cambiar estado</h3>
+            <form id="form-estado">
+                <div>
+                    <label for="estado-cita">Estado: </label>
+                    <select name="estado" id="estado-cita">
+                        <option value="en_reparacion">En reparación</option>
+                        <option value="finalizada">Finalizada</option>
+                    </select>
+                </div>
+
+                <!-- Aquí se mostrarán los mensajes de error o de éxito -->
+                <p id="mensaje-cita"></p>
+
+                <input type="button" value="Guardar" id="guardar-estado" onClick="guardarEstado()">
+            </form>
+        </section>
+
+        <!-- Sección de horas: formulario para imputar las horas de trabajo a la cita elegida -->
+        <section id="horas">
+            <h2>Imputar horas</h2>
+
+            <form id="form-horas">
+                <div>
+                    <label for="descripcion">Descripción: </label>
+                    <input type="text" name="descripcion" id="descripcion">
+                </div>
+                <div>
+                    <label for="horas-trabajo">Horas: </label>
+                    <input type="text" name="horas" id="horas-trabajo">
+                </div>
+
+                <!-- Aquí se mostrarán los mensajes de error o de éxito -->
+                <p id="mensaje-horas"></p>
+
+                <input type="button" value="Imputar horas" id="imputar-horas" onClick="imputarHoras()">
+            </form>
+        </section>
+
+        <!-- Sección de repuestos: formulario para añadir los repuestos usados a la cita elegida -->
+        <section id="repuestos">
+            <h2>Añadir repuesto</h2>
+
+            <form id="form-repuesto">
+                <div>
+                    <label for="repuesto">Repuesto: </label>
+                    <!-- Aquí se mostrarán los repuestos del catálogo del taller -->
+                    <select name="repuesto_id" id="repuesto">
+                    </select>
+                </div>
+                <div>
+                    <label for="cantidad">Cantidad: </label>
+                    <input type="text" name="cantidad" id="cantidad">
+                </div>
+
+                <!-- Aquí se mostrarán los mensajes de error o de éxito -->
+                <p id="mensaje-repuesto"></p>
+
+                <input type="button" value="Añadir repuesto" id="anadir-repuesto" onClick="anadirRepuesto()">
+            </form>
+        </section>
+    </main>
+</body>
+</html>
