@@ -193,6 +193,42 @@ if ($usuarioAuth["rol"] === "cliente") {
             $msg = "Citas obtenidas correctamente";
             break;
 
+        case "actualizar":
+            $datos = $request["data"];
+
+            // Carga la cita de la BD para comprobar que existe y no perder el resto de sus datos
+            $cita = new Cita((int) $datos["id"]);
+            $datosCita = $cita->obtener();
+
+            if ($datosCita === false || (int) $datosCita["mecanico_id"] !== (int) $usuarioAuth["id"]) {
+                // El mecánico solo puede cambiar las citas que tiene asignadas
+                $success = false;
+                $msg = "No se ha encontrado la cita";
+            } else if ($datos["estado"] === "en_reparacion" && $datosCita["estado"] !== "confirmada") {
+                // Solo se empieza a reparar una cita que oficina ya ha confirmado
+                $success = false;
+                $msg = "Solo se puede poner en reparación una cita confirmada";
+            } else if ($datos["estado"] === "finalizada" && $datosCita["estado"] !== "en_reparacion") {
+                // Solo se finaliza una cita que está en reparación
+                $success = false;
+                $msg = "Solo se puede finalizar una cita en reparación";
+            } else if ($datos["estado"] !== "en_reparacion" && $datos["estado"] !== "finalizada") {
+                // El mecánico solo puede poner la cita en reparación o finalizarla
+                $success = false;
+                $msg = "El estado no es válido";
+            } else {
+                // Cambia el estado con el setter mágico (__set) y guarda la cita
+                $cita->estado = $datos["estado"];
+
+                if ($cita->actualizar()) {
+                    $msg = "Estado actualizado correctamente";
+                } else {
+                    $success = false;
+                    $msg = "No se ha podido guardar la cita";
+                }
+            }
+            break;
+
         default:
             $success = false;
             $msg = "Acción no soportada";
