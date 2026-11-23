@@ -229,6 +229,36 @@ if ($usuarioAuth["rol"] === "cliente") {
             }
             break;
 
+        case "imputar_horas":
+            $datos = $request["data"];
+
+            // Carga la cita de la BD para comprobar que existe, que es del mecánico y su estado
+            $cita = new Cita((int) $datos["id"]);
+            $datosCita = $cita->obtener();
+
+            if ($datosCita === false || (int) $datosCita["mecanico_id"] !== (int) $usuarioAuth["id"]) {
+                // El mecánico solo puede imputar horas a las citas que tiene asignadas
+                $success = false;
+                $msg = "No se ha encontrado la cita";
+            } else if ($datosCita["estado"] !== "en_reparacion") {
+                // Solo se imputan horas mientras la cita está en reparación
+                $success = false;
+                $msg = "Solo se pueden imputar horas a una cita en reparación";
+            } else if ($datos["descripcion"] === "") {
+                $success = false;
+                $msg = "Escribe qué trabajo has hecho";
+            } else if (!is_numeric($datos["horas"]) || $datos["horas"] <= 0) {
+                // Las horas tienen que ser un número (con punto para los decimales) mayor que 0
+                $success = false;
+                $msg = "Las horas tienen que ser un número mayor que 0";
+            } else if ($cita->imputarHoras($datos["descripcion"], (float) $datos["horas"])) {
+                $msg = "Horas imputadas correctamente";
+            } else {
+                $success = false;
+                $msg = "No se han podido imputar las horas";
+            }
+            break;
+
         default:
             $success = false;
             $msg = "Acción no soportada";

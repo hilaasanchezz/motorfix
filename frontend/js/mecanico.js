@@ -1,8 +1,8 @@
 /**
  * Controlador de la vista mecanico.html (panel de mecánico).
  *
- * Gestiona la hoja de trabajo del mecánico: el listado de las citas que tiene asignadas
- * y el cambio de su estado.
+ * Gestiona la hoja de trabajo del mecánico: el listado de las citas que tiene asignadas,
+ * el cambio de su estado y la imputación de horas de trabajo.
  *
  * @author Hilario Sánchez Pérez
  */
@@ -174,6 +174,66 @@ function guardarEstado() {
             /* Vuelve a cargar la tabla para que se vea el estado nuevo. La cita sigue
                elegida para poder imputarle horas y repuestos */
             cargarCitas();
+        } else {
+            mensaje.className = "error";
+        }
+    })
+    // Si la petición falla (por ejemplo, el servidor no responde) muestra un error
+    .catch((error) => {
+        console.error("Error:", error);
+        mensaje.textContent = "No se ha podido conectar con el servidor";
+        mensaje.className = "error";
+    });
+}
+
+/**
+ * Imputa las horas de trabajo a la cita en la que trabaja el mecánico.
+ *
+ * Se llama desde el botón "Imputar horas" con onClick="imputarHoras()". Si no se ha elegido
+ * ninguna cita, avisa. Si no, envía a cita_sw.php la acción "imputar_horas" con el id de la
+ * cita, la descripción y las horas, y pone el mensaje del servidor en verde o en rojo.
+ * Si va bien, vacía el formulario.
+ */
+function imputarHoras() {
+    const mensaje = document.getElementById("mensaje-horas");
+
+    // Si no se ha pulsado "Elegir" en ninguna cita, avisa y no envía nada
+    if (citaElegida === null) {
+        mensaje.textContent = "Pulsa \"Elegir\" en una cita de la tabla";
+        mensaje.className = "error";
+        return;
+    }
+
+    // Prepara la petición con el id de la cita, la descripción y las horas del formulario
+    let request = {
+        action: "imputar_horas",
+        auth_key: localStorage.getItem("auth_key"),
+        data: {
+            id: citaElegida,
+            descripcion: document.getElementById("descripcion").value,
+            horas: document.getElementById("horas-trabajo").value,
+        },
+    };
+
+    // Envía la petición por POST a cita_sw.php
+    fetch(urlCita, {
+        method: "POST",
+        body: JSON.stringify(request),
+        headers: {
+            "Content-Type": "application/json",
+        },
+    })
+    // Convierte el texto que devuelve el servidor en un objeto de JavaScript
+    .then((res) => res.json())
+    .then((response) => {
+        // Pone el mensaje del servidor en verde si ha ido bien o en rojo si no
+        mensaje.textContent = response.msg;
+
+        if (response.success) {
+            mensaje.className = "exito";
+
+            // Vacía el formulario para poder imputar otro trabajo
+            document.getElementById("form-horas").reset();
         } else {
             mensaje.className = "error";
         }

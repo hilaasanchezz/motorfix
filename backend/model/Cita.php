@@ -252,6 +252,25 @@ class Cita {
         }
     }
 
+    // Guarda en la tabla trabajos las horas que el mecánico de la cita ha trabajado en ella (el precio por hora es el de la BD)
+    public function imputarHoras(string $descripcion, float $horas): bool {
+        try {
+            $sql = "INSERT INTO trabajos (cita_id, mecanico_id, descripcion, horas)
+                    VALUES (:cita_id, :mecanico_id, :descripcion, :horas)";
+
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([
+                ':cita_id'     => $this->id,
+                ':mecanico_id' => $this->mecanicoId,
+                ':descripcion' => $descripcion,
+                ':horas'       => $horas,
+            ]);
+            return true;
+        } catch (PDOException $e) {
+            return false;
+        }
+    }
+
     /**
      * Elimina la cita con el id actual.
      *
