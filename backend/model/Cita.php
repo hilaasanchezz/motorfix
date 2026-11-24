@@ -271,6 +271,41 @@ class Cita {
         }
     }
 
+    // Indica si la cita ya tiene un repuesto (solo se permite uno por cita)
+    public function tieneRepuesto(): bool {
+        $stmt = $this->pdo->prepare("SELECT 1 FROM cita_repuestos WHERE cita_id = :cita_id");
+        $stmt->execute([':cita_id' => $this->id]);
+        return (bool) $stmt->fetchColumn();
+    }
+
+    /* Guarda en la tabla cita_repuestos una unidad del repuesto indicado, con el precio
+       que tiene ahora en el catálogo (tabla repuestos) */
+    public function anadirRepuesto(int $repuestoId): bool {
+        try {
+            // Busca el precio del repuesto; si no existe, no añade nada
+            $stmt = $this->pdo->prepare("SELECT precio FROM repuestos WHERE id = :id");
+            $stmt->execute([':id' => $repuestoId]);
+            $precio = $stmt->fetchColumn();
+
+            if ($precio === false) {
+                return false;
+            }
+
+            $sql = "INSERT INTO cita_repuestos (cita_id, repuesto_id, cantidad, precio_unitario)
+                    VALUES (:cita_id, :repuesto_id, 1, :precio_unitario)";
+
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([
+                ':cita_id'         => $this->id,
+                ':repuesto_id'     => $repuestoId,
+                ':precio_unitario' => $precio,
+            ]);
+            return true;
+        } catch (PDOException $e) {
+            return false;
+        }
+    }
+
     /**
      * Elimina la cita con el id actual.
      *

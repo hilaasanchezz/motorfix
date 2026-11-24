@@ -91,13 +91,13 @@
             <form id="form-repuesto">
                 <div>
                     <label for="repuesto">Repuesto: </label>
-                    <!-- Aquí se mostrarán los repuestos del catálogo del taller -->
+                    <!-- Los repuestos del taller; el value es el id de cada uno en la tabla repuestos -->
                     <select name="repuesto_id" id="repuesto">
+                        <option value="">--seleccionar--</option>
+                        <option value="5">Neumático</option>
+                        <option value="1">Aceite</option>
+                        <option value="3">Pastillas de freno</option>
                     </select>
-                </div>
-                <div>
-                    <label for="cantidad">Cantidad: </label>
-                    <input type="text" name="cantidad" id="cantidad">
                 </div>
 
                 <!-- Aquí se mostrarán los mensajes de error o de éxito -->

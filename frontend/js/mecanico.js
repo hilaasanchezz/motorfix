@@ -2,7 +2,7 @@
  * Controlador de la vista mecanico.html (panel de mecánico).
  *
  * Gestiona la hoja de trabajo del mecánico: el listado de las citas que tiene asignadas,
- * el cambio de su estado y la imputación de horas de trabajo.
+ * el cambio de su estado, la imputación de horas de trabajo y el repuesto usado.
  *
  * @author Hilario Sánchez Pérez
  */
@@ -234,6 +234,65 @@ function imputarHoras() {
 
             // Vacía el formulario para poder imputar otro trabajo
             document.getElementById("form-horas").reset();
+        } else {
+            mensaje.className = "error";
+        }
+    })
+    // Si la petición falla (por ejemplo, el servidor no responde) muestra un error
+    .catch((error) => {
+        console.error("Error:", error);
+        mensaje.textContent = "No se ha podido conectar con el servidor";
+        mensaje.className = "error";
+    });
+}
+
+/**
+ * Añade el repuesto elegido a la cita en la que trabaja el mecánico.
+ *
+ * Se llama desde el botón "Añadir repuesto" con onClick="anadirRepuesto()". Si no se ha elegido
+ * ninguna cita, avisa. Si no, envía a cita_sw.php la acción "anadir_repuesto" con el id de la
+ * cita y el del repuesto, y pone el mensaje del servidor en verde o en rojo.
+ * Si va bien, vacía el formulario.
+ */
+function anadirRepuesto() {
+    const mensaje = document.getElementById("mensaje-repuesto");
+
+    // Si no se ha pulsado "Elegir" en ninguna cita, avisa y no envía nada
+    if (citaElegida === null) {
+        mensaje.textContent = "Pulsa \"Elegir\" en una cita de la tabla";
+        mensaje.className = "error";
+        return;
+    }
+
+    // Prepara la petición con el id de la cita y el del repuesto elegido en el desplegable
+    let request = {
+        action: "anadir_repuesto",
+        auth_key: localStorage.getItem("auth_key"),
+        data: {
+            id: citaElegida,
+            repuesto_id: document.getElementById("repuesto").value,
+        },
+    };
+
+    // Envía la petición por POST a cita_sw.php
+    fetch(urlCita, {
+        method: "POST",
+        body: JSON.stringify(request),
+        headers: {
+            "Content-Type": "application/json",
+        },
+    })
+    // Convierte el texto que devuelve el servidor en un objeto de JavaScript
+    .then((res) => res.json())
+    .then((response) => {
+        // Pone el mensaje del servidor en verde si ha ido bien o en rojo si no
+        mensaje.textContent = response.msg;
+
+        if (response.success) {
+            mensaje.className = "exito";
+
+            // Deja el desplegable otra vez en "--seleccionar--"
+            document.getElementById("form-repuesto").reset();
         } else {
             mensaje.className = "error";
         }

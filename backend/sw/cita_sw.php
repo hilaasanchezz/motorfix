@@ -259,6 +259,36 @@ if ($usuarioAuth["rol"] === "cliente") {
             }
             break;
 
+        case "anadir_repuesto":
+            $datos = $request["data"];
+
+            // Carga la cita de la BD para comprobar que existe, que es del mecánico y su estado
+            $cita = new Cita((int) $datos["id"]);
+            $datosCita = $cita->obtener();
+
+            if ($datosCita === false || (int) $datosCita["mecanico_id"] !== (int) $usuarioAuth["id"]) {
+                // El mecánico solo puede añadir repuestos a las citas que tiene asignadas
+                $success = false;
+                $msg = "No se ha encontrado la cita";
+            } else if ($datosCita["estado"] !== "en_reparacion") {
+                // Solo se añaden repuestos mientras la cita está en reparación
+                $success = false;
+                $msg = "Solo se pueden añadir repuestos a una cita en reparación";
+            } else if ($datos["repuesto_id"] === "") {
+                $success = false;
+                $msg = "Elige un repuesto";
+            } else if ($cita->tieneRepuesto()) {
+                // Cada cita solo puede llevar un repuesto
+                $success = false;
+                $msg = "Esta cita ya tiene un repuesto";
+            } else if ($cita->anadirRepuesto((int) $datos["repuesto_id"])) {
+                $msg = "Repuesto añadido correctamente";
+            } else {
+                $success = false;
+                $msg = "No se ha podido añadir el repuesto";
+            }
+            break;
+
         default:
             $success = false;
             $msg = "Acción no soportada";
