@@ -15,7 +15,8 @@ const url = "../../backend/sw/auth_sw.php";
  *
  * Se llama desde el botón "Entrar" de login.html con onClick="login()".
  * Si va bien, guarda el auth_key en localStorage y redirige: el cliente va a
- * cliente.html, oficina va a oficina.html y el resto de roles ven un aviso.
+ * cliente.html, oficina va a oficina.html, el mecánico va a mecanico.html y el
+ * administrador ve un aviso.
  * Si falla, muestra el mensaje del servidor en rojo.
  */
 function login() {

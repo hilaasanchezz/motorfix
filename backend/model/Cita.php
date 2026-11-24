@@ -199,7 +199,17 @@ class Cita {
         }
     }
 
-    // Devuelve las citas asignadas al mecánico indicado, con la matrícula, la marca y el modelo de su vehículo, ordenadas por fecha
+    /**
+     * Devuelve las citas asignadas a un mecánico, ordenadas por fecha.
+     *
+     * Se filtra por la columna mecanico_id de la cita y se une con la tabla vehiculos (JOIN)
+     * para sacar la matrícula, la marca y el modelo, porque el mecánico no puede pedir
+     * los vehículos a vehiculo_sw.php.
+     *
+     * @param int $mecanicoId Id del usuario mecánico
+     * @return array Lista de citas con id, vehiculo_id, matricula, marca, modelo, fecha_cita,
+     *               motivo y estado; vacía si no tiene ninguna o falla la consulta
+     */
     public static function listarPorMecanico(int $mecanicoId): array {
         try {
             $sql = "SELECT citas.id, citas.vehiculo_id, vehiculos.matricula, vehiculos.marca, vehiculos.modelo,
@@ -252,7 +262,17 @@ class Cita {
         }
     }
 
-    // Guarda en la tabla trabajos las horas que el mecánico de la cita ha trabajado en ella (el precio por hora es el de la BD)
+    /**
+     * Imputa horas de trabajo a la cita con el id actual.
+     *
+     * Inserta una fila en la tabla trabajos con el id y el mecánico de la cita. El precio
+     * por hora no se indica, así que se guarda el que la columna precio_hora tiene por
+     * defecto en la BD (45 €).
+     *
+     * @param string $descripcion Trabajo que se ha hecho
+     * @param float  $horas       Horas trabajadas, mayor que 0
+     * @return bool true si se han guardado, false si falla la consulta
+     */
     public function imputarHoras(string $descripcion, float $horas): bool {
         try {
             $sql = "INSERT INTO trabajos (cita_id, mecanico_id, descripcion, horas)
@@ -271,15 +291,28 @@ class Cita {
         }
     }
 
-    // Indica si la cita ya tiene un repuesto (solo se permite uno por cita)
+    /**
+     * Comprueba si la cita con el id actual ya tiene un repuesto.
+     *
+     * Cada cita solo puede llevar un repuesto, así que se usa antes de añadir otro.
+     *
+     * @return bool true si ya tiene uno, false si no
+     */
     public function tieneRepuesto(): bool {
         $stmt = $this->pdo->prepare("SELECT 1 FROM cita_repuestos WHERE cita_id = :cita_id");
         $stmt->execute([':cita_id' => $this->id]);
         return (bool) $stmt->fetchColumn();
     }
 
-    /* Guarda en la tabla cita_repuestos una unidad del repuesto indicado, con el precio
-       que tiene ahora en el catálogo (tabla repuestos) */
+    /**
+     * Añade una unidad de un repuesto a la cita con el id actual.
+     *
+     * Busca el precio del repuesto en la tabla repuestos y lo guarda en cita_repuestos
+     * como precio_unitario, para que la factura no cambie si más adelante cambia el precio.
+     *
+     * @param int $repuestoId Id del repuesto (5 neumático, 1 aceite o 3 pastillas de freno)
+     * @return bool true si se ha añadido, false si el repuesto no existe o falla la consulta
+     */
     public function anadirRepuesto(int $repuestoId): bool {
         try {
             // Busca el precio del repuesto; si no existe, no añade nada

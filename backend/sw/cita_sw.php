@@ -1,12 +1,13 @@
 <?php
 
 /**
- * Servicio web de las citas (panel de cliente y panel de oficina).
+ * Servicio web de las citas (paneles de cliente, oficina y mecánico).
  *
  * Recibe por POST un JSON con la acción, el token (auth_key) y sus datos, y devuelve
  * siempre un JSON con la estructura {success, msg, data}. Pueden usarlo los usuarios
- * con rol cliente, que solo ven y piden citas para sus propios vehículos, y los de
- * oficina, que trabajan con las citas de todos los clientes.
+ * con rol cliente, que solo ven y piden citas para sus propios vehículos, los de
+ * oficina, que trabajan con las citas de todos los clientes, y los mecánicos, que solo
+ * trabajan con las citas que tienen asignadas.
  *
  * Acciones del rol oficina:
  * - listar: devuelve en data todas las citas, ordenadas por fecha.
@@ -23,6 +24,17 @@
  *   que ser del cliente, y la fecha tiene que ser válida y posterior a ahora.
  *   data: vehiculo_id, fecha_cita (posterior a ahora), motivo
  *   Devuelve solo success y msg.
+ *
+ * Acciones del rol mecánico (todas comprueban que la cita es suya):
+ * - listar: devuelve en data sus citas, ordenadas por fecha, con la matrícula, la marca
+ *   y el modelo del vehículo.
+ * - actualizar: pone en reparación una cita confirmada o finaliza una en reparación.
+ *   data: id, estado (en_reparacion o finalizada)
+ * - imputar_horas: guarda un trabajo en una cita en reparación.
+ *   data: id, descripcion, horas (número mayor que 0, con punto para los decimales)
+ * - anadir_repuesto: añade una unidad de un repuesto a una cita en reparación. Solo se
+ *   permite un repuesto por cita.
+ *   data: id, repuesto_id
  *
  * Ejemplos de petición:
  * <code>
