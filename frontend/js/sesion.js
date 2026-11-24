@@ -1,5 +1,5 @@
 /**
- * Funciones de sesión compartidas por los paneles (cliente.html y oficina.html).
+ * Funciones de sesión compartidas por los paneles (cliente.html, oficina.html y mecanico.html).
  *
  * Contiene el cierre de sesión, que es igual en todos los paneles.
  *
