@@ -199,6 +199,23 @@ class Cita {
         }
     }
 
+    // Devuelve las citas asignadas al mecánico indicado, con la matrícula, la marca y el modelo de su vehículo, ordenadas por fecha
+    public static function listarPorMecanico(int $mecanicoId): array {
+        try {
+            $sql = "SELECT citas.id, citas.vehiculo_id, vehiculos.matricula, vehiculos.marca, vehiculos.modelo,
+                           citas.fecha_cita, citas.motivo, citas.estado
+                    FROM citas JOIN vehiculos ON citas.vehiculo_id = vehiculos.id
+                    WHERE citas.mecanico_id = :mecanico_id
+                    ORDER BY citas.fecha_cita";
+
+            $stmt = Conection::getInstance()->getPDO()->prepare($sql);
+            $stmt->execute([':mecanico_id' => $mecanicoId]);
+            return $stmt->fetchAll();
+        } catch (PDOException $e) {
+            return [];
+        }
+    }
+
     /**
      * Actualiza todos los datos de la cita con el id actual.
      *
@@ -230,6 +247,60 @@ class Cita {
             // rowCount() sería 0 si los datos no cambian, así que se comprueba
             // con existe() que la cita está en la tabla
             return $stmt->rowCount() > 0 || $this->existe();
+        } catch (PDOException $e) {
+            return false;
+        }
+    }
+
+    // Guarda en la tabla trabajos las horas que el mecánico de la cita ha trabajado en ella (el precio por hora es el de la BD)
+    public function imputarHoras(string $descripcion, float $horas): bool {
+        try {
+            $sql = "INSERT INTO trabajos (cita_id, mecanico_id, descripcion, horas)
+                    VALUES (:cita_id, :mecanico_id, :descripcion, :horas)";
+
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([
+                ':cita_id'     => $this->id,
+                ':mecanico_id' => $this->mecanicoId,
+                ':descripcion' => $descripcion,
+                ':horas'       => $horas,
+            ]);
+            return true;
+        } catch (PDOException $e) {
+            return false;
+        }
+    }
+
+    // Indica si la cita ya tiene un repuesto (solo se permite uno por cita)
+    public function tieneRepuesto(): bool {
+        $stmt = $this->pdo->prepare("SELECT 1 FROM cita_repuestos WHERE cita_id = :cita_id");
+        $stmt->execute([':cita_id' => $this->id]);
+        return (bool) $stmt->fetchColumn();
+    }
+
+    /* Guarda en la tabla cita_repuestos una unidad del repuesto indicado, con el precio
+       que tiene ahora en el catálogo (tabla repuestos) */
+    public function anadirRepuesto(int $repuestoId): bool {
+        try {
+            // Busca el precio del repuesto; si no existe, no añade nada
+            $stmt = $this->pdo->prepare("SELECT precio FROM repuestos WHERE id = :id");
+            $stmt->execute([':id' => $repuestoId]);
+            $precio = $stmt->fetchColumn();
+
+            if ($precio === false) {
+                return false;
+            }
+
+            $sql = "INSERT INTO cita_repuestos (cita_id, repuesto_id, cantidad, precio_unitario)
+                    VALUES (:cita_id, :repuesto_id, 1, :precio_unitario)";
+
+            $stmt = $this->pdo->prepare($sql);
+            $stmt->execute([
+                ':cita_id'         => $this->id,
+                ':repuesto_id'     => $repuestoId,
+                ':precio_unitario' => $precio,
+            ]);
+            return true;
         } catch (PDOException $e) {
             return false;
         }

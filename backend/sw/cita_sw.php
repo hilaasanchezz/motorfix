@@ -185,6 +185,114 @@ if ($usuarioAuth["rol"] === "cliente") {
             $success = false;
             $msg = "Acción no soportada";
     }
+} else if ($usuarioAuth["rol"] === "mecanico") {
+    switch ($request["action"] ?? "") {
+        case "listar":
+            // Devuelve solo las citas que oficina ha asignado al mecánico que ha iniciado sesión
+            $data = Cita::listarPorMecanico($usuarioAuth["id"]);
+            $msg = "Citas obtenidas correctamente";
+            break;
+
+        case "actualizar":
+            $datos = $request["data"];
+
+            // Carga la cita de la BD para comprobar que existe y no perder el resto de sus datos
+            $cita = new Cita((int) $datos["id"]);
+            $datosCita = $cita->obtener();
+
+            if ($datosCita === false || (int) $datosCita["mecanico_id"] !== (int) $usuarioAuth["id"]) {
+                // El mecánico solo puede cambiar las citas que tiene asignadas
+                $success = false;
+                $msg = "No se ha encontrado la cita";
+            } else if ($datos["estado"] === "en_reparacion" && $datosCita["estado"] !== "confirmada") {
+                // Solo se empieza a reparar una cita que oficina ya ha confirmado
+                $success = false;
+                $msg = "Solo se puede poner en reparación una cita confirmada";
+            } else if ($datos["estado"] === "finalizada" && $datosCita["estado"] !== "en_reparacion") {
+                // Solo se finaliza una cita que está en reparación
+                $success = false;
+                $msg = "Solo se puede finalizar una cita en reparación";
+            } else if ($datos["estado"] !== "en_reparacion" && $datos["estado"] !== "finalizada") {
+                // El mecánico solo puede poner la cita en reparación o finalizarla
+                $success = false;
+                $msg = "El estado no es válido";
+            } else {
+                // Cambia el estado con el setter mágico (__set) y guarda la cita
+                $cita->estado = $datos["estado"];
+
+                if ($cita->actualizar()) {
+                    $msg = "Estado actualizado correctamente";
+                } else {
+                    $success = false;
+                    $msg = "No se ha podido guardar la cita";
+                }
+            }
+            break;
+
+        case "imputar_horas":
+            $datos = $request["data"];
+
+            // Carga la cita de la BD para comprobar que existe, que es del mecánico y su estado
+            $cita = new Cita((int) $datos["id"]);
+            $datosCita = $cita->obtener();
+
+            if ($datosCita === false || (int) $datosCita["mecanico_id"] !== (int) $usuarioAuth["id"]) {
+                // El mecánico solo puede imputar horas a las citas que tiene asignadas
+                $success = false;
+                $msg = "No se ha encontrado la cita";
+            } else if ($datosCita["estado"] !== "en_reparacion") {
+                // Solo se imputan horas mientras la cita está en reparación
+                $success = false;
+                $msg = "Solo se pueden imputar horas a una cita en reparación";
+            } else if ($datos["descripcion"] === "") {
+                $success = false;
+                $msg = "Escribe qué trabajo has hecho";
+            } else if (!is_numeric($datos["horas"]) || $datos["horas"] <= 0) {
+                // Las horas tienen que ser un número (con punto para los decimales) mayor que 0
+                $success = false;
+                $msg = "Las horas tienen que ser un número mayor que 0";
+            } else if ($cita->imputarHoras($datos["descripcion"], (float) $datos["horas"])) {
+                $msg = "Horas imputadas correctamente";
+            } else {
+                $success = false;
+                $msg = "No se han podido imputar las horas";
+            }
+            break;
+
+        case "anadir_repuesto":
+            $datos = $request["data"];
+
+            // Carga la cita de la BD para comprobar que existe, que es del mecánico y su estado
+            $cita = new Cita((int) $datos["id"]);
+            $datosCita = $cita->obtener();
+
+            if ($datosCita === false || (int) $datosCita["mecanico_id"] !== (int) $usuarioAuth["id"]) {
+                // El mecánico solo puede añadir repuestos a las citas que tiene asignadas
+                $success = false;
+                $msg = "No se ha encontrado la cita";
+            } else if ($datosCita["estado"] !== "en_reparacion") {
+                // Solo se añaden repuestos mientras la cita está en reparación
+                $success = false;
+                $msg = "Solo se pueden añadir repuestos a una cita en reparación";
+            } else if ($datos["repuesto_id"] === "") {
+                $success = false;
+                $msg = "Elige un repuesto";
+            } else if ($cita->tieneRepuesto()) {
+                // Cada cita solo puede llevar un repuesto
+                $success = false;
+                $msg = "Esta cita ya tiene un repuesto";
+            } else if ($cita->anadirRepuesto((int) $datos["repuesto_id"])) {
+                $msg = "Repuesto añadido correctamente";
+            } else {
+                $success = false;
+                $msg = "No se ha podido añadir el repuesto";
+            }
+            break;
+
+        default:
+            $success = false;
+            $msg = "Acción no soportada";
+    }
 } else {
     // El resto de roles no pueden entrar
     $success = false;
